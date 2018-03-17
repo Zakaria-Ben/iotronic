@@ -527,3 +527,62 @@ class Connection(object):
         :param board_uuid: The id or uuid of a service.
         :returns: A list of ExposedServices on the board.
         """
+
+    @abc.abstractmethod
+    def get_port_by_id(self, port_id):
+        """Return a port using the id
+
+        :param port_uuid: The id of a port.
+        :returns: A port
+        """
+    @abc.abstractmethod
+    def get_port_by_uuid(self, port_uuid):
+        """Return a port using the uuid
+
+        :param port_uuid: The uuid of a port.
+        :returns: A port
+        """
+    @abc.abstractmethod
+    def get_port_by_name(self, port_name):
+        """Return a port using the name of the port
+
+        :param port_name: The name of a port.
+        :returns: A port
+        """
+
+    @abc.abstractmethod
+    def get_ports_by_board_uuid(self, board_uuid):
+            """Return a list of port on a board
+
+            :param board_uuid: The uuid of a board.
+            :returns: A list of ports on a board
+            """
+
+    @abc.abstractmethod
+    def create_port(self, values):
+        """Return a list of port on a board
+
+        :param values: A dict containing several items used to identify
+                       and track the port
+        :returns: A port.
+        """
+    @abc.abstractmethod
+    def destroy_port(self, port_uuid):
+        """Return a list of port on a board
+
+        :param port_uuid: The uuid of a port
+        :returns: A port.
+        """
+
+############################################################
+###    @abc.abstractmethod
+###    def update_port(self, port_uuid, values):
+###        """Update properties of a port.
+###
+###        :param plugin_id: The id or uuid of a port.
+###        :param values: Dict of values to update.
+###        :returns: A port.
+###        :raises: PortAssociated
+###        :raises: PortNotFound
+###        """
+############################################################

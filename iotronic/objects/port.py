@@ -35,8 +35,10 @@ class Port(base.IotronicObject):
         'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
         'ip': obj_utils.str_or_none,
+        'board_uuid': obj_utils.str_or_none,
         'status': obj_utils.str_or_none,
         'subnet': obj_utils.str_or_none,
+
     }
 
     @staticmethod
@@ -95,9 +97,8 @@ class Port(base.IotronicObject):
         return port
 
     @base.remotable_classmethod
-    def list(cls, context, limit=None, marker=None, sort_key=None,
-             sort_dir=None, filters=None):
-        """Return a list of Port objects.
+    def get_by_board_uuid(cls, context, board_uuid):
+        """Return a list of port objects.
 
         :param context: Security context.
         :param limit: maximum number of resources to return in a single result.
@@ -105,20 +106,16 @@ class Port(base.IotronicObject):
         :param sort_key: column to sort results by.
         :param sort_dir: direction to sort. "asc" or "desc".
         :param filters: Filters to apply.
-        :returns: a list of :class:`Port` object.
+        :returns: a list of :class:`ports` object.
 
         """
-        db_ports = cls.dbapi.get_port_list(filters=filters,
-                                                 limit=limit,
-                                                 marker=marker,
-                                                 sort_key=sort_key,
-                                                 sort_dir=sort_dir)
+        db_port = cls.dbapi.get_ports_by_board_uuid(board_uuid)
         return [Port._from_db_object(cls(context), obj)
-                for obj in db_ports]
+                for obj in db_port]
 
     @base.remotable
     def create(self, context=None):
-        """Create a Service record in the DB.
+        """Create a Port record in the DB.
 
         Column-wise updates will be made based on the result of
         self.what_changed(). If target_power_state is provided,
@@ -130,7 +127,7 @@ class Port(base.IotronicObject):
                         Unfortunately, RPC requires context as the first
                         argument, even though we don't use it.
                         A context should be set when instantiating the
-                        object, e.g.: Service(context)
+                        object, e.g.: Port(context)
 
         """
 
@@ -140,21 +137,21 @@ class Port(base.IotronicObject):
 
     @base.remotable
     def destroy(self, context=None):
-        """Delete the Service from the DB.
+        """Delete the Port from the DB.
 
         :param context: Security context. NOTE: This should only
                         be used internally by the indirection_api.
                         Unfortunately, RPC requires context as the first
                         argument, even though we don't use it.
                         A context should be set when instantiating the
-                        object, e.g.: Service(context)
+                        object, e.g.: Port(context)
         """
         self.dbapi.destroy_port(self.uuid)
         self.obj_reset_changes()
 
     @base.remotable
     def save(self, context=None):
-        """Save updates to this Service.
+        """Save updates to this Port.
 
         Column-wise updates will be made based on the result of
         self.what_changed(). If target_power_state is provided,
@@ -166,7 +163,7 @@ class Port(base.IotronicObject):
                         Unfortunately, RPC requires context as the first
                         argument, even though we don't use it.
                         A context should be set when instantiating the
-                        object, e.g.: Service(context)
+                        object, e.g.: Port(context)
         """
         updates = self.obj_get_changes()
         self.dbapi.update_port(self.uuid, updates)
@@ -181,7 +178,7 @@ class Port(base.IotronicObject):
                         Unfortunately, RPC requires context as the first
                         argument, even though we don't use it.
                         A context should be set when instantiating the
-                        object, e.g.: Service(context)
+                        object, e.g.: Port(context)
         """
         current = self.__class__.get_by_uuid(self._context, self.uuid)
         for field in self.fields:
@@ -189,3 +186,5 @@ class Port(base.IotronicObject):
                     self, base.get_attrname(field))
                     and self[field] != current[field]):
                 self[field] = current[field]
+
+
