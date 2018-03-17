@@ -248,3 +248,9 @@ class ExposedService(Base):
     board_uuid = Column(String(36), ForeignKey('boards.uuid'))
     service_uuid = Column(String(36), ForeignKey('services.uuid'))
     public_port = Column(Integer)
+
+
+class Port(Base):
+    """Represents a port on board."""
+
+
