@@ -260,12 +260,13 @@ class Port(Base):
     )
     id = Column(Integer, primary_key=True)
     board_uuid = Column(String(36), ForeignKey('boards.uuid'))
+    wamp_agent_id = Column(String(36), ForeignKey('wampagents.id'))
     uuid = Column(String(36))
     name = Column(String(36))
     project = Column(String(36))
     MAC_add = Column(String(36))
     ip = Column(String(36))
     status = Column(String(36))
-    subnet = Column(String(36))
+    network = Column(String(36))
 
 

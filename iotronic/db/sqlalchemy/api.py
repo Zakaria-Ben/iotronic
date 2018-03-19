@@ -838,7 +838,64 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.ServiceNotFoundNotFound(uuid=service_id)
+                raise exception.ServiceNotFound(uuid=service_id)
 
             ref.update(values)
         return ref
+
+
+################################## Port API  ################################
+
+    def get_port_by_id (self, port_id):
+        query = model_query(models.Port).filter_by(id=port_id)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.PortNotFound(id=port_id)
+
+    def get_port_by_uuid(self, port_uuid):
+        query = model_query(models.Port).filter_by(uuid=port_uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.PortNotFound(uuid=port_uuid)
+
+    def get_port_by_name(self, port_name):
+        query = model_query(models.Port).filter_by(name=port_name)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.PortNotFound(name=port_name)
+
+    def get_ports_by_board_uuid(self, board_uuid):
+        query = model_query(
+            models.Port).filter_by(
+            board_uuid=board_uuid)
+        try:
+            return query.all()
+        except NoResultFound:
+            raise exception.NoPorts(uuid=board_uuid)
+
+    def get_ports_by_wamp_agent_id(self, wamp_agent_id):
+        query = model_query(
+            models.Port).filter_by(
+            wamp_agent_id=wamp_agent_id)
+        try:
+            return query.all()
+        except NoResultFound:
+            raise exception.NoPortsManaged(wamp_agent_id=wamp_agent_id)
+
+    def create_port(self, values):
+        port = models.Port()
+        port.update(values)
+        port.save()
+        return port
+
+    def destroy_port(self, port_uuid):
+        session = get_session()
+        with session.begin():
+            query = model_query(models.Port, session=session)
+            query = add_identity_filter(query, port_uuid)
+            count = query.delete()
+            if count == 0:
+                raise exception.PortNotFound(uuid=port_uuid)

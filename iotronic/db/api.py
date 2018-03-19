@@ -528,6 +528,8 @@ class Connection(object):
         :returns: A list of ExposedServices on the board.
         """
 
+################ Port
+
     @abc.abstractmethod
     def get_port_by_id(self, port_id):
         """Return a port using the id
@@ -557,6 +559,14 @@ class Connection(object):
             :param board_uuid: The uuid of a board.
             :returns: A list of ports on a board
             """
+    @abc.abstractmethod
+    def get_ports_by_wamp_agent_id(self, wamp_agent_id):
+            """Return a list of port managed by a wamp agent
+
+            :param wamp_id: The id of a wamp agent.
+            :returns: A list of ports managed by a wamp agent
+            """
+
 
     @abc.abstractmethod
     def create_port(self, values):

@@ -32,13 +32,13 @@ class Port(base.IotronicObject):
         'id': int,
         'uuid': obj_utils.str_or_none,
         'name': obj_utils.str_or_none,
+        'network': obj_utils.str_or_none,
         'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
         'ip': obj_utils.str_or_none,
         'board_uuid': obj_utils.str_or_none,
         'status': obj_utils.str_or_none,
-        'subnet': obj_utils.str_or_none,
-
+        'wamp_agent_id': int,
     }
 
     @staticmethod
@@ -112,6 +112,23 @@ class Port(base.IotronicObject):
         db_port = cls.dbapi.get_ports_by_board_uuid(board_uuid)
         return [Port._from_db_object(cls(context), obj)
                 for obj in db_port]
+
+    @base.remotable_classmethod
+    def get_by_wamp_agent_id(cls, context, wamp_id):
+        """Return a list of Port objects managed by the wamp agent.
+
+        :param context: Security context.
+        :param limit: maximum number of resources to return in a single result.
+        :param marker: pagination marker for large data sets.
+        :param sort_key: column to sort results by.
+        :param sort_dir: direction to sort. "asc" or "desc".
+        :param filters: Filters to apply.
+        :returns: a list of :class:`Port` object.
+
+        """
+        db_wamp = cls.dbapi.get_ports_by_wamp_agent_id(wamp_id)
+        return [Port._from_db_object(cls(context), obj)
+                for obj in db_wamp]
 
     @base.remotable
     def create(self, context=None):
