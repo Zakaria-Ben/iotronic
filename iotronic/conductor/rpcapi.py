@@ -304,3 +304,16 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
         return cctxt.call(context, 'remove_port_from_board',
                           port_uuid=port_uuid)
+
+    def create_tap_interface(self, context, board_uuid,port_uuid, topic=None):
+        """create a tap interface on a wamp agent host
+
+                :param context: request context.
+                :param port_uuid: the uuid of the board.
+                :param topic: RPC topic. Defaults to self.topic.
+                :returns:
+
+                """
+        cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
+        return cctxt.call(context, 'create_tap_interface',
+                          board_uuid=board_uuid, port_uuid=port_uuid)

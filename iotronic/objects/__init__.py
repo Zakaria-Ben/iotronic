@@ -21,6 +21,7 @@ from iotronic.objects import plugin
 from iotronic.objects import service
 from iotronic.objects import sessionwp
 from iotronic.objects import wampagent
+from iotronic.objects import port
 
 Conductor = conductor.Conductor
 Board = board.Board
@@ -31,6 +32,7 @@ ExposedService = exposedservice.ExposedService
 SessionWP = sessionwp.SessionWP
 WampAgent = wampagent.WampAgent
 Service = service.Service
+Port = port.Port
 
 __all__ = (
     Conductor,
@@ -41,5 +43,6 @@ __all__ = (
     Service,
     Plugin,
     InjectionPlugin,
-    ExposedService
+    ExposedService,
+    Port
 )

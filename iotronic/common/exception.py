@@ -619,3 +619,6 @@ class NoPorts(NotFound):
 
 class NoPortsManaged(NotFound):
     message = _("No ports are managed by the wamp agent %(id)s.")
+
+class NetworkError(IotronicException):
+    message = _("Network operation failure.")

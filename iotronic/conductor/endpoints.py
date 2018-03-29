@@ -16,6 +16,7 @@
 import _pickle as cpickle
 from iotronic.common import exception
 from iotronic.common import states
+from iotronic.common import neutron
 from iotronic.conductor.provisioner import Provisioner
 from iotronic import objects
 from iotronic.objects import base as objects_base
@@ -375,3 +376,55 @@ class ConductorEndpoint(object):
                                   (service, exposed.public_port))
 
         return 0
+
+###################### Port
+
+    def create_port_on_board(self, ctx, board_uuid, network_id):
+        CONF = cfg.CONF
+
+        LOG.info('Creation of a port on the board %s in the network %s',
+                 board_uuid, network_id)
+
+        board = objects.Board.get_by_uuid(ctx, board_uuid)
+        wagent_id = board.agent
+        ws_url = CONF.wamp.wamp_transport_url
+        port_iotronic = objects.Port()
+
+        try:
+            port = neutron.add_port_to_network(wagent_id, network_id)
+
+            port_iotronic.uuid = port.port_id
+            port_iotronic.network_uuid = port.port_id
+            port_iotronic.MAC_add = port.mac_address
+            port_iotronic.board_uuid = board_uuid
+            port_iotronic.save()
+
+            r_tcp_port=random.randint(10000, 30000)
+            l_tcp_port=random.randint(10000, 30000)
+
+            s4t_topic = 'create_tap_interface'
+            full_topic = board.agent + '.' + s4t_topic
+
+            self.wamp_agent_client.call(ctx, full_topic,(port_iotronic.uuid, r_tcp_port) )
+
+            result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',
+                                           (l_tcp_port,r_tcp_port,ws_url))
+
+            return port_iotronic
+
+
+
+        except:
+            LOG.error('Error while creating the port')
+            return 0
+
+
+
+
+
+
+
+
+
+
+

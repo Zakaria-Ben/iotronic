@@ -632,3 +632,12 @@ class BoardsController(rest.RestController):
                                            limit, sort_key, sort_dir,
                                            project=project,
                                            fields=fields)
+
+################################## Port
+
+class BoardPortController(rest.RestController):
+
+    _custom_actions = {
+        'action': ['POST'],
+        'detail': ['GET']
+    }

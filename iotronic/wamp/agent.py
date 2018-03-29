@@ -15,6 +15,7 @@
 
 import asyncio
 import txaio
+import subprocess
 
 from iotronic.common import exception
 from iotronic.common.i18n import _LI
@@ -83,6 +84,32 @@ class WampEndpoint(object):
 
         return r.result()
 
+    def create_tap_interface(self, ctx, port_uuid, TCP_port):
+        LOG.debug('Creating tap interface on the wamp agent host')
+        try:
+            p = subprocess.Popen('socat -d -d TCP:localhost:'+TCP_port+',reuseaddr,forever,'
+                             'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up &'
+                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            return 1
+        except:
+            LOG.error('Error while creating the tap interface')
+            return 0
+
+
+"""   On the board
+
+   def create_interface_on_board(self, ctx,l_TCP_port, r_TCP_port, ws_url):
+        LOG.debug('Creating virtual interface on the board')
+        try:
+            p1 = subprocess.Popen('wstun -r'+r_TCP_port+':localhost:'+l_TCP_port+' ws://'+ws_url+' &'
+                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            p2 = subprocess.Popen('socat -d -d TCP-L:'+l_TCP_port+',bind=localhost,reuseaddr,forever,interval=10 TUN,tun-type=tap,tun-name=iot,up &'
+                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            return 1
+        except:
+            LOG.error('Error while creating the virtual interface')
+            return 0
+    """
 
 class RPCServer(Thread):
     def __init__(self):

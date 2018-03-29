@@ -32,7 +32,7 @@ class Port(base.IotronicObject):
         'id': int,
         'uuid': obj_utils.str_or_none,
         'name': obj_utils.str_or_none,
-        'network': obj_utils.str_or_none,
+        'network_uuid': obj_utils.str_or_none,
         'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
         'ip': obj_utils.str_or_none,
