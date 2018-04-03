@@ -253,14 +253,13 @@ class ExposedService(Base):
 class Port(Base):
     """Represents a port on board."""
 
-    __tablename__ = 'ports_on_boards'
+    __tablename__ = 'ports_on_board'
     __table_args__ = (
         schema.UniqueConstraint('uuid', name='uniq_ports0uuid'),
         table_args()
     )
     id = Column(Integer, primary_key=True)
     board_uuid = Column(String(36), ForeignKey('boards.uuid'))
-    wamp_agent_id = Column(String(36), ForeignKey('wampagents.id'))
     uuid = Column(String(36))
     name = Column(String(36))
     project = Column(String(36))

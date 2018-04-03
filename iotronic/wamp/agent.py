@@ -76,6 +76,7 @@ async def wamp_request(kwarg):
 class WampEndpoint(object):
     def __init__(self, agent_uuid):
         setattr(self, agent_uuid + '.s4t_invoke_wamp', self.s4t_invoke_wamp)
+        setattr(self, agent_uuid + '.create_tap_interface', self.create_tap_interface)
 
     def s4t_invoke_wamp(self, ctx, **kwarg):
         LOG.debug("CONDUCTOR sent me: " + kwarg['wamp_rpc_call'])

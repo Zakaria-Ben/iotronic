@@ -405,14 +405,12 @@ class ConductorEndpoint(object):
             s4t_topic = 'create_tap_interface'
             full_topic = board.agent + '.' + s4t_topic
 
-            self.wamp_agent_client.call(ctx, full_topic,(port_iotronic.uuid, r_tcp_port) )
+            self.wamp_agent_client.call(ctx, full_topic, (port_iotronic.uuid, r_tcp_port))
 
             result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',
                                            (l_tcp_port,r_tcp_port,ws_url))
 
             return port_iotronic
-
-
 
         except:
             LOG.error('Error while creating the port')

@@ -116,6 +116,41 @@ class BoardCollection(collection.Collection):
         collection.next = collection.get_next(limit, url=url, **kwargs)
         return collection
 
+###################################################
+
+class CreationPort(base.APIBase):
+
+    network_uuid = types.uuid_or_name
+    board_uuid = types.uuid_or_name
+
+    def __init__(self, **kwargs):
+        self.fields = []
+        fields = list(objects.Port.fields)
+        fields.remove('board_uuid')
+        for k in fields:
+            # Skip fields we do not expose.
+            if not hasattr(self, k):
+                continue
+            self.fields.append(k)
+            setattr(self, k, kwargs.get(k, wtypes.Unset))
+        setattr(self, 'port', kwargs.get('port_uuid', wtypes.Unset))
+
+class PortCollection(collection.Collection):
+
+    """API representation of a collection of ports."""
+
+    ports = [CreationPort]
+
+    def __init__(self, **kwargs):
+        self._type = 'creation'
+
+    @staticmethod
+    def get_list(ports, fields=None):
+        collection = PortCollection()
+        collection.ports = [PortCollection(**n.as_dict())
+                              for n in ports]
+        return collection
+#######################################################
 
 class InjectionPlugin(base.APIBase):
     plugin = types.uuid_or_name
@@ -192,6 +227,10 @@ class PluginAction(base.APIBase):
 
 
 class ServiceAction(base.APIBase):
+    action = wsme.wsattr(wtypes.text)
+    parameters = types.jsontype
+
+class PortAction(base.APIBase):
     action = wsme.wsattr(wtypes.text)
     parameters = types.jsontype
 
@@ -320,7 +359,6 @@ class BoardPluginsController(rest.RestController):
                                                   rpc_plugin.uuid,
                                                   rpc_board.uuid)
 
-
 class BoardServicesController(rest.RestController):
 
     _custom_actions = {
@@ -400,6 +438,66 @@ class BoardServicesController(rest.RestController):
 
         return self._get_services_on_board_collection(rpc_board.uuid)
 
+################################## Port
+
+class BoardPortsController(rest.RestController):
+
+    _custom_actions = {
+        'action': ['POST'],
+        'detail': ['GET']
+    }
+
+    def __init__(self, board_ident):
+        self.board_ident = board_ident
+
+
+    def _get_ports_on_board_collection(self, board_uuid, fields=None):
+        ports = objects.Port.list(pecan.request.context,
+                                               board_uuid)
+
+        return PortCollection.get_list(ports,
+                                          fields=fields)
+
+    @expose.expose(PortCollection,status_code=200)
+    def get_all(self):
+        """Retrieve a list of ports of a board.
+
+        """
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
+
+        cdict = pecan.request.context.to_policy_values()
+        cdict['project_id'] = rpc_board.project
+        policy.authorize('iot:port_on_board:get', cdict, cdict)
+
+        return self._get_ports_on_board_collection(rpc_board.uuid)
+
+    @expose.expose(wtypes.text, types.uuid_or_name, body=PortAction,
+                   status_code=200)
+    def attach_board_to_net(self, board_ident, network_uuid, PortAction):
+
+        if not PortAction.action:
+            raise exception.MissingParameterValue(
+                ("Action is not specified."))
+
+        rpc_board = api_utils.get_rpc_board(board_ident)
+
+        try:
+            cdict = pecan.request.context.to_policy_values()
+            cdict['owner'] = rpc_board.owner
+            policy.authorize('iot:port_creation:post', cdict, cdict)
+
+        except exception:
+            return exception
+
+        rpc_board.check_if_online()
+
+        result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
+                                                     rpc_board.uuid, network_uuid,
+                                                     PortAction.action)
+        return result
+
+
+#############################################
 
 class BoardsController(rest.RestController):
     """REST controller for Boards."""
@@ -407,6 +505,7 @@ class BoardsController(rest.RestController):
     _subcontroller_map = {
         'plugins': BoardPluginsController,
         'services': BoardServicesController,
+        'ports': BoardPortsController,
     }
 
     invalid_sort_key_list = ['extra', 'location']
@@ -633,11 +732,4 @@ class BoardsController(rest.RestController):
                                            project=project,
                                            fields=fields)
 
-################################## Port
 
-class BoardPortController(rest.RestController):
-
-    _custom_actions = {
-        'action': ['POST'],
-        'detail': ['GET']
-    }

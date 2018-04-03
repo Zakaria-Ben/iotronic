@@ -146,6 +146,33 @@ def get_rpc_service(service_ident):
 
     raise exception.ServiceNotFound(service=service_ident)
 
+#################################
+
+def get_rpc_port(port_ident):
+    """Get the RPC port from the port uuid.
+
+    :param port_ident: the UUID or logical name of a port.
+
+    :returns: The RPC Service.
+    :raises: InvalidUuidOrName if the name or uuid provided is not valid.
+    :raises: portNotFound if the service is not found.
+    """
+    # Check to see if the port_ident is a valid UUID.  If it is, treat it
+    # as a UUID.
+    if uuidutils.is_uuid_like(port_ident):
+        return objects.Port.get_by_uuid(pecan.request.context,
+                                           port_ident)
+
+    # We can refer to ports by their name, if the client supports it
+    else:
+        return objects.Port.get_by_name(pecan.request.context,
+                                           port_ident)
+
+    raise exception.InvalidUuidOrName(name=port_ident)
+
+    raise exception.PortNottFound(port=port_ident)
+
+########################################3
 
 def is_valid_board_name(name):
     """Determine if the provided name is a valid board name.

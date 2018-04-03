@@ -38,7 +38,6 @@ class Port(base.IotronicObject):
         'ip': obj_utils.str_or_none,
         'board_uuid': obj_utils.str_or_none,
         'status': obj_utils.str_or_none,
-        'wamp_agent_id': int,
     }
 
     @staticmethod

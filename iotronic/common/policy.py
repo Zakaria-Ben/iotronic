@@ -150,6 +150,15 @@ exposed_service_policies = [
 
 ]
 
+port_policies = [
+    policy.RuleDefault('iot:port_on_board:get',
+                       'rule:admin_or_owner',
+                       description='Retrieve Port records'),
+    policy.RuleDefault('iot:port_creation:put', 'rule:admin_or_owner',
+                       description='Create a Port record'),
+
+]
+
 
 def list_policies():
     policies = (default_policies
@@ -158,6 +167,7 @@ def list_policies():
                 + injection_plugin_policies
                 + service_policies
                 + exposed_service_policies
+                + port_policies
                 )
     return policies
 
