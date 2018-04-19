@@ -129,6 +129,23 @@ class Port(base.IotronicObject):
         return [Port._from_db_object(cls(context), obj)
                 for obj in db_wamp]
 
+    @base.remotable_classmethod
+    def list(cls, context, board_uuid):
+        """Return a list of Ports objects.
+
+        :param context: Security context.
+        :param limit: maximum number of resources to return in a single result.
+        :param marker: pagination marker for large data sets.
+        :param sort_key: column to sort results by.
+        :param sort_dir: direction to sort. "asc" or "desc".
+        :param filters: Filters to apply.
+        :returns: a list of :class:`Port` object.
+
+        """
+        db_exps = cls.dbapi.get_ports_list(board_uuid)
+        return [Port._from_db_object(cls(context), obj)
+                for obj in db_exps]
+
     @base.remotable
     def create(self, context=None):
         """Create a Port record in the DB.

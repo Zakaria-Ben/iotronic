@@ -366,7 +366,6 @@ class ConductorEndpoint(object):
     def restore_services_on_board(self, ctx, board_uuid):
         LOG.info('Restoring the services into the board %s',
                  board_uuid)
-
         exposed_list = objects.ExposedService.get_by_board_uuid(ctx,
                                                                 board_uuid)
 
@@ -377,46 +376,43 @@ class ConductorEndpoint(object):
 
         return 0
 
-###################### Port
+    ###def test(self, ctx, board_uuid):
 
-    def create_port_on_board(self, ctx, board_uuid, network_id):
-        CONF = cfg.CONF
+    ###    LOG.info('Test RPC %s',board_uuid)
+    ###    return 1
 
-        LOG.info('Creation of a port on the board %s in the network %s',
-                 board_uuid, network_id)
+    def create_port_on_board(self, ctx, board_uuid):
+
+        network_uuid = "73e13fd8-1438-4abf-b0aa-e514959957be"
+        LOG.info('Creation of a port on the board %s in the network',
+                 board_uuid)
 
         board = objects.Board.get_by_uuid(ctx, board_uuid)
         wagent_id = board.agent
-        ws_url = CONF.wamp.wamp_transport_url
-        port_iotronic = objects.Port()
+        port_iotronic = objects.Port(ctx)
 
         try:
-            port = neutron.add_port_to_network(wagent_id, network_id)
-
-            port_iotronic.uuid = port.port_id
-            port_iotronic.network_uuid = port.port_id
-            port_iotronic.MAC_add = port.mac_address
-            port_iotronic.board_uuid = board_uuid
-            port_iotronic.save()
-
-            r_tcp_port=random.randint(10000, 30000)
-            l_tcp_port=random.randint(10000, 30000)
+            port = neutron.add_port_to_network(wagent_id,network_uuid)
+            p = port.port_id
+            ##port_iotronic.uuid = port.port_id
+            ##port_iotronic.network_uuid = port.port_id
+            ##port_iotronic.MAC_add = port.mac_address
+            ##port_iotronic.board_uuid = board_uuid
+            ##port_iotronic.save()
+            r_tcp_port = 10000
+            l_tcp_port = 20000
 
             s4t_topic = 'create_tap_interface'
             full_topic = board.agent + '.' + s4t_topic
 
-            self.wamp_agent_client.call(ctx, full_topic, (port_iotronic.uuid, r_tcp_port))
-
-            result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',
-                                           (l_tcp_port,r_tcp_port,ws_url))
-
-            return port_iotronic
-
-        except:
-            LOG.error('Error while creating the port')
+            try:
+                res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
+                #result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
+            except Exception as e:
+                LOG.error(e)
+        except Exception as e:
+            LOG.error(e)
             return 0
-
-
 
 
 

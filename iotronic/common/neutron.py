@@ -14,39 +14,86 @@
 from neutronclient.common import exceptions as neutron_exceptions
 from neutronclient.v2_0 import client as clientv20
 from oslo_log import log
-from oslo_utils import uuidutils
 from oslo_config import cfg
-
 from iotronic.common import exception
 from iotronic.common.i18n import _
 from iotronic.common import keystone
+
+from keystoneauth1 import identity
+from keystoneauth1 import session
 
 CONF = cfg.CONF
 
 LOG = log.getLogger(__name__)
 
-DEFAULT_NEUTRON_URL = 'http://%s:9696' % CONF.my_ip
+neutron_opts = [
+    cfg.StrOpt('url',
+               default='http://localhost:9696/',
+               help=('URL neutron')),
+    cfg.StrOpt('retries',
+               default=3,
+               help=('retries neutron')),
+    cfg.StrOpt('auth_strategy',
+               default='noauth',
+               help=('auth_strategy neutron')),
+    cfg.StrOpt('username',
+               default='neutron',
+               help=('neutron username')),
+    cfg.StrOpt('password',
+               default='0penstack',
+               help=('password')),
+    cfg.StrOpt('project_name',
+               default='service',
+               help=('service')),
+    cfg.StrOpt('project_domain_name',
+               default='default',
+               help=('domain id')),
+    cfg.StrOpt('auth_url',
+               default='http://localhost:35357',
+               help=('auth')),
+    cfg.StrOpt('project_domain_id',
+               default='default',
+               help=('project domain id')),
+cfg.StrOpt('user_domain_id',
+               default='default',
+               help=('user domain id')),
+]
+
+CONF.register_opts(neutron_opts, 'neutron')
+
+DEFAULT_NEUTRON_URL = CONF.neutron.url
 
 _NEUTRON_SESSION = None
 
 
-def _get_neutron_session():
+
+
+"""def _get_neutron_session():
     global _NEUTRON_SESSION
     if not _NEUTRON_SESSION:
         _NEUTRON_SESSION = keystone.get_session('neutron')
     return _NEUTRON_SESSION
-
+"""
 
 def get_client(token=None):
-    params = {'retries': CONF.neutron.retries}
+    auth = identity.Password(auth_url=CONF.neutron.auth_url, username = CONF.neutron.username,
+                             password = CONF.neutron.password, project_name = CONF.neutron.project_name,
+                             project_domain_id = CONF.neutron.project_domain_id,
+                             user_domain_id = CONF.neutron.user_domain_id)
+    sess = session.Session(auth=auth)
+    neutron = clientv20.Client(session=sess)
+    return neutron
+
+
+"""    params = {'retries': CONF.neutron.retries}
     url = CONF.neutron.url
     if CONF.neutron.auth_strategy == 'noauth':
         params['endpoint_url'] = url or DEFAULT_NEUTRON_URL
         params['auth_strategy'] = 'noauth'
-        params.update({
-            'timeout': CONF.neutron.url_timeout or CONF.neutron.timeout,
-            'insecure': CONF.neutron.insecure,
-            'ca_cert': CONF.neutron.cafile})
+        ##params.update({
+        ##    'timeout': CONF.neutron.url_timeout or CONF.neutron.timeout,
+        ##    'insecure': CONF.neutron.insecure,
+        ##    'ca_cert': CONF.neutron.cafile})
     else:
         session = _get_neutron_session()
         if token is None:
@@ -71,7 +118,7 @@ def get_client(token=None):
 
     return clientv20.Client(**params)
 
-
+"""
 def unbind_neutron_port(port_id, client=None):
     """Unbind a neutron port
 

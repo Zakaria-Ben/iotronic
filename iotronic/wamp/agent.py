@@ -69,7 +69,7 @@ connected = False
 async def wamp_request(kwarg):
     LOG.debug("calling: " + kwarg['wamp_rpc_call'])
     d = await wamp_session_caller.call(kwarg['wamp_rpc_call'], *kwarg['data'])
-    return d
+    return dfull_topic
 
 
 # OSLO ENDPOINT
@@ -85,10 +85,10 @@ class WampEndpoint(object):
 
         return r.result()
 
-    def create_tap_interface(self, ctx, port_uuid, TCP_port):
+    def create_tap_interface(self, ctx, port_uuid, tcp_port):
         LOG.debug('Creating tap interface on the wamp agent host')
         try:
-            p = subprocess.Popen('socat -d -d TCP:localhost:'+TCP_port+',reuseaddr,forever,'
+            p = subprocess.Popen('socat -d -d TCP:localhost:'+str(tcp_port)+',reuseaddr,forever,'
                              'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up &'
                              , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             return 1

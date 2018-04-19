@@ -885,6 +885,12 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.NoPortsManaged(wamp_agent_id=wamp_agent_id)
 
+    def get_ports_list(self, board_uuid):
+        query = model_query(
+            models.Port).filter_by(
+            board_uuid=board_uuid)
+        return query.all()
+
     def create_port(self, values):
         port = models.Port()
         port.update(values)

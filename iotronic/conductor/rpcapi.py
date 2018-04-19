@@ -277,9 +277,7 @@ class ConductorAPI(object):
         return cctxt.call(context, 'restore_services_on_board',
                           board_uuid=board_uuid)
 
-#################### Port
-
-    def create_port_on_board(self, context, board_uuid, network_id, topic=None):
+    def create_port_on_board(self, context, board_uuid, topic=None):
         """Add a port on a Board
 
         :param context: request context.
@@ -290,7 +288,21 @@ class ConductorAPI(object):
         """
         cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
         return cctxt.call(context, 'create_port_on_board',
-                          board_uuid=board_uuid, network_id=network_id)
+                          board_uuid=board_uuid)
+
+
+    ###def test(self, context, board_uuid, topic=None):
+    ###    """Add a port on a Board
+
+    ###    :param context: request context.
+    ###    :param board_uuid: the uuid of the board.
+    ###    :param topic: RPC topic. Defaults to self.topic.
+    ###    :returns: created port object
+
+    ###    """
+    ###    cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
+    ###    return cctxt.call(context, 'test',
+    ###                      board_uuid=board_uuid)
 
     def remove_port_from_board(self, context, port_uuid, topic=None):
         """remove a port from a Board

@@ -26,6 +26,10 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 
+from oslo_log import log as logging
+LOG = logging.getLogger(__name__)
+
+
 _DEFAULT_RETURN_FIELDS = ('name', 'code', 'status', 'uuid', 'session', 'type')
 
 
@@ -230,9 +234,8 @@ class ServiceAction(base.APIBase):
     action = wsme.wsattr(wtypes.text)
     parameters = types.jsontype
 
-class PortAction(base.APIBase):
-    action = wsme.wsattr(wtypes.text)
-    parameters = types.jsontype
+class Network(base.APIBase):
+    network_uuid = types.jsontype
 
 
 class BoardPluginsController(rest.RestController):
@@ -442,11 +445,6 @@ class BoardServicesController(rest.RestController):
 
 class BoardPortsController(rest.RestController):
 
-    _custom_actions = {
-        'action': ['POST'],
-        'detail': ['GET']
-    }
-
     def __init__(self, board_ident):
         self.board_ident = board_ident
 
@@ -454,7 +452,6 @@ class BoardPortsController(rest.RestController):
     def _get_ports_on_board_collection(self, board_uuid, fields=None):
         ports = objects.Port.list(pecan.request.context,
                                                board_uuid)
-
         return PortCollection.get_list(ports,
                                           fields=fields)
 
@@ -462,39 +459,32 @@ class BoardPortsController(rest.RestController):
     def get_all(self):
         """Retrieve a list of ports of a board.
 
-        """
+       """
         rpc_board = api_utils.get_rpc_board(self.board_ident)
-
-        cdict = pecan.request.context.to_policy_values()
-        cdict['project_id'] = rpc_board.project
-        policy.authorize('iot:port_on_board:get', cdict, cdict)
 
         return self._get_ports_on_board_collection(rpc_board.uuid)
 
-    @expose.expose(wtypes.text, types.uuid_or_name, body=PortAction,
+    @expose.expose(wtypes.text, types.uuid_or_name,
                    status_code=200)
-    def attach_board_to_net(self, board_ident, network_uuid, PortAction):
+    def put(self):
 
-        if not PortAction.action:
-            raise exception.MissingParameterValue(
-                ("Action is not specified."))
-
-        rpc_board = api_utils.get_rpc_board(board_ident)
-
-        try:
-            cdict = pecan.request.context.to_policy_values()
-            cdict['owner'] = rpc_board.owner
-            policy.authorize('iot:port_creation:post', cdict, cdict)
-
-        except exception:
-            return exception
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
 
         rpc_board.check_if_online()
 
         result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
-                                                     rpc_board.uuid, network_uuid,
-                                                     PortAction.action)
+                                                     rpc_board.uuid)
         return result
+
+    ###def put(self):
+
+    ###    rpc_board = api_utils.get_rpc_board(self.board_ident)
+
+    ###    rpc_board.check_if_online()
+
+    ###    result = pecan.request.rpcapi.test(pecan.request.context,
+    ###                                                 rpc_board.uuid)
+    ###    return result
 
 
 #############################################
