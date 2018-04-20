@@ -88,10 +88,10 @@ class WampEndpoint(object):
     def create_tap_interface(self, ctx, port_uuid, tcp_port):
         LOG.debug('Creating tap interface on the wamp agent host')
 
-        p = subprocess.Popen('socat -d -d TCP:localhost:'+str(tcp_port)+',reuseaddr,forever,'
-                             'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up &'
+        p = subprocess.Popen('socat -d -d TCP:localhost:'+tcp_port+',reuseaddr,forever,'
+                            'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up &'
                              , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        return p
+        return 1
 
 
 """   On the board
@@ -121,8 +121,8 @@ class RPCServer(Thread):
         target = oslo_messaging.Target(topic=AGENT_HOST + '.s4t_invoke_wamp',
                                        server='server1')
 
-        #target1 = oslo_messaging.Target(topic=AGENT_HOST + '.create_tap_interface',
-        #                               server='server1')
+        target1 = oslo_messaging.Target(topic=AGENT_HOST + '.create_tap_interface',
+                                       server='server1')
 
         access_policy = dispatcher.DefaultRPCAccessPolicy
         self.server = oslo_messaging.get_rpc_server(
@@ -130,10 +130,10 @@ class RPCServer(Thread):
             endpoints, executor='threading',
             access_policy=access_policy)
 
-        #self.server = oslo_messaging.get_rpc_server(
-        #    transport, target1,
-        #    endpoints, executor='threading',
-        #    access_policy=access_policy)
+        self.server = oslo_messaging.get_rpc_server(
+            transport, target1,
+            endpoints, executor='threading',
+            access_policy=access_policy)
 
     def run(self):
         LOG.info("Starting AMQP server... ")

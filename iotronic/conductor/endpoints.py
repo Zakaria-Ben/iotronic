@@ -398,8 +398,10 @@ class ConductorEndpoint(object):
             ##python_obj = json.loads(port)
             ##wjson = port.read()
             ##wjdata = json.loads(wjson)
-            p = port ['port']['id']
-            LOG.info(str(p))
+            p = str(port ['port']['id'])
+            p1=p
+            LOG.info(str(p1))
+            LOG.info(type(p1))
             ##port_iotronic.uuid = port.port_id
             ##port_iotronic.network_uuid = port.port_id
             ##port_iotronic.MAC_add = port.mac_address
@@ -412,7 +414,7 @@ class ConductorEndpoint(object):
             full_topic = str(str(board.agent) + '.' + s4t_topic)
             self.target.topic = full_topic
             LOG.info('start wamp client')
-            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
+            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p1, tcp_port=r_tcp_port)
             return res
         ##result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
         except Exception as e:
