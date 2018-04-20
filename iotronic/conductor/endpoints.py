@@ -413,7 +413,7 @@ class ConductorEndpoint(object):
             self.target.topic = full_topic
             LOG.info('start wamp client')
             res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
-
+            return res
         ##result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
         except Exception as e:
             LOG.error('error')
