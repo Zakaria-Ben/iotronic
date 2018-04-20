@@ -27,6 +27,8 @@ import oslo_messaging
 
 import random
 
+import json
+
 LOG = logging.getLogger(__name__)
 
 serializer = objects_base.IotronicObjectSerializer()
@@ -393,26 +395,31 @@ class ConductorEndpoint(object):
 
         try:
             port = neutron.add_port_to_network(wagent_id,network_uuid)
-            p = port.port_id
+            ##python_obj = json.loads(port)
+            ##wjson = port.read()
+            ##wjdata = json.loads(wjson)
+            p = port ['port']['id']
+            LOG.info(str(p))
             ##port_iotronic.uuid = port.port_id
             ##port_iotronic.network_uuid = port.port_id
             ##port_iotronic.MAC_add = port.mac_address
             ##port_iotronic.board_uuid = board_uuid
             ##port_iotronic.save()
-            r_tcp_port = 10000
+            r_tcp_port = str(10000)
             l_tcp_port = 20000
 
             s4t_topic = 'create_tap_interface'
-            full_topic = board.agent + '.' + s4t_topic
+            full_topic = str(str(board.agent) + '.' + s4t_topic)
+            self.target.topic = full_topic
+            LOG.info('start wamp client')
+            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
 
-            try:
-                res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
-                #result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
-            except Exception as e:
-                LOG.error(e)
+        ##result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
         except Exception as e:
-            LOG.error(e)
-            return 0
+            LOG.error('error')
+
+        LOG.info('tap created')
+        return 1
 
 
 
