@@ -464,16 +464,20 @@ class BoardPortsController(rest.RestController):
 
         return self._get_ports_on_board_collection(rpc_board.uuid)
 
-    @expose.expose(wtypes.text, types.uuid_or_name,
+    @expose.expose(wtypes.text, types.uuid_or_name, body=Network,
                    status_code=200)
-    def put(self):
+    def put(self, Network):
+
+        if not Network.network_uuid:
+            raise exception.MissingParameterValue(
+                ("Network is not specified."))
 
         rpc_board = api_utils.get_rpc_board(self.board_ident)
 
         rpc_board.check_if_online()
 
         result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
-                                                     rpc_board.uuid)
+                                                     rpc_board.uuid, Network.network_uuid)
         return result
 
     ###def put(self):

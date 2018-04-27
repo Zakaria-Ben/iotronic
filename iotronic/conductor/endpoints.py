@@ -33,6 +33,7 @@ LOG = logging.getLogger(__name__)
 
 serializer = objects_base.IotronicObjectSerializer()
 
+Port = list()
 
 def get_best_agent(ctx):
     agents = objects.WampAgent.list(ctx, filters={'online': True})
@@ -383,44 +384,59 @@ class ConductorEndpoint(object):
     ###    LOG.info('Test RPC %s',board_uuid)
     ###    return 1
 
-    def create_port_on_board(self, ctx, board_uuid):
+    def create_port_on_board(self, ctx, board_uuid, network_uuid):
 
-        network_uuid = "73e13fd8-1438-4abf-b0aa-e514959957be"
+        #network_uuid = "008daf9c-f489-4406-ad74-f0b9d47c1f91"
         LOG.info('Creation of a port on the board %s in the network',
                  board_uuid)
 
         board = objects.Board.get_by_uuid(ctx, board_uuid)
-        wagent_id = board.agent
+        #wagent_id = str(board.agent)
         port_iotronic = objects.Port(ctx)
 
         try:
-            port = neutron.add_port_to_network(wagent_id,network_uuid)
+            port = neutron.add_port_to_network(board.agent,network_uuid)
             ##python_obj = json.loads(port)
             ##wjson = port.read()
             ##wjdata = json.loads(wjson)
             p = str(port ['port']['id'])
-            p1=p
-            LOG.info(str(p1))
-            LOG.info(type(p1))
             ##port_iotronic.uuid = port.port_id
             ##port_iotronic.network_uuid = port.port_id
             ##port_iotronic.MAC_add = port.mac_address
             ##port_iotronic.board_uuid = board_uuid
             ##port_iotronic.save()
-            r_tcp_port = str(10000)
-            l_tcp_port = 20000
+            port_socat = random.randint(10000,20000)
+            LOG.info(str(port_socat))
+            i=0
+            while i<len(Port):
+                if Port[i] == port_socat:
+                    i=0
+                    port_socat=random.randint(10000,20000)
+                i+=1
+            Port.insert(0,port_socat)
+            LOG.info(Port)
+            r_tcp_port = str(port_socat)
+            LOG.info(str(port_socat))
 
             s4t_topic = 'create_tap_interface'
             full_topic = str(str(board.agent) + '.' + s4t_topic)
             self.target.topic = full_topic
             LOG.info('start wamp client')
-            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p1, tcp_port=r_tcp_port)
-            return res
-        ##result = self.execute_on_board(ctx, board_uuid, 'create_interface_on_board',(l_tcp_port,r_tcp_port))
+            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
+            #return res
+            a = 3
+            b =5
+            try:
+                res = self.execute_on_board(ctx, board_uuid, 'Create_VIF',(r_tcp_port,))
+            except Exception as e:
+                LOG.error(str(e))
+            #result = manage_result(res, 'helloRPC', board_uuid)
+            #LOG.debug(result)
+            #return 1
         except Exception as e:
-            LOG.error('error')
+            LOG.error(e)
 
-        LOG.info('tap created')
+        LOG.info('Board attached')
         return 1
 
 

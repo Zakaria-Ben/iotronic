@@ -130,7 +130,7 @@ class RPCServer(Thread):
             endpoints, executor='threading',
             access_policy=access_policy)
 
-        self.server = oslo_messaging.get_rpc_server(
+        self.server1 = oslo_messaging.get_rpc_server(
             transport, target1,
             endpoints, executor='threading',
             access_policy=access_policy)
@@ -138,10 +138,12 @@ class RPCServer(Thread):
     def run(self):
         LOG.info("Starting AMQP server... ")
         self.server.start()
+        self.server1.start()
 
     def stop(self):
         LOG.info("Stopping AMQP server... ")
         self.server.stop()
+        self.server1.stop()
         LOG.info("AMQP server stopped. ")
 
 
