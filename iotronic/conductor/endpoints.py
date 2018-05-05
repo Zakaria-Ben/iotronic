@@ -24,8 +24,9 @@ from iotronic.wamp import wampmessage as wm
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging
-
+import time
 import random
+import asyncio
 
 import json
 
@@ -386,58 +387,92 @@ class ConductorEndpoint(object):
 
     def create_port_on_board(self, ctx, board_uuid, network_uuid):
 
-        #network_uuid = "008daf9c-f489-4406-ad74-f0b9d47c1f91"
         LOG.info('Creation of a port on the board %s in the network',
                  board_uuid)
 
         board = objects.Board.get_by_uuid(ctx, board_uuid)
-        #wagent_id = str(board.agent)
         port_iotronic = objects.Port(ctx)
 
+        port_mac = ""
         try:
+                   ################# Creation of the port on the DB
+
             port = neutron.add_port_to_network(board.agent,network_uuid)
-            ##python_obj = json.loads(port)
-            ##wjson = port.read()
-            ##wjdata = json.loads(wjson)
             p = str(port ['port']['id'])
-            ##port_iotronic.uuid = port.port_id
-            ##port_iotronic.network_uuid = port.port_id
-            ##port_iotronic.MAC_add = port.mac_address
-            ##port_iotronic.board_uuid = board_uuid
-            ##port_iotronic.save()
+            port_iotronic.port_uuid = port ['port']['id']
+            port_iotronic.MAC_add = port ['port']['mac_address']
+            port_iotronic.board_uuid = board_uuid
+            port_iotronic.create()
+
+                   #################
+
+            port_mac = str(port['port']['mac_address'])
+
             port_socat = random.randint(10000,20000)
             LOG.info(str(port_socat))
+            LOG.info(str(port_mac))
+
             i=0
             while i<len(Port):
                 if Port[i] == port_socat:
                     i=0
                     port_socat=random.randint(10000,20000)
-                i+=1
+                i += 1
+
+            global Port
             Port.insert(0,port_socat)
             LOG.info(Port)
             r_tcp_port = str(port_socat)
             LOG.info(str(port_socat))
 
-            s4t_topic = 'create_tap_interface'
-            full_topic = str(str(board.agent) + '.' + s4t_topic)
-            self.target.topic = full_topic
-            LOG.info('start wamp client')
-            res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
-            #return res
-            a = 3
-            b =5
-            try:
-                res = self.execute_on_board(ctx, board_uuid, 'Create_VIF',(r_tcp_port,))
-            except Exception as e:
-                LOG.error(str(e))
-            #result = manage_result(res, 'helloRPC', board_uuid)
-            #LOG.debug(result)
-            #return 1
-        except Exception as e:
-            LOG.error(e)
 
-        LOG.info('Board attached')
-        return 1
+            s4t_topic = 'create_tap_interface'
+            full_topic = str(board.agent) + '.' + s4t_topic
+            self.target.topic = full_topic
+
+            try:
+
+                LOG.info('Creation of the VIF on the board')
+                res1 = self.execute_on_board(ctx, board_uuid, "Create_VIF", (r_tcp_port,))
+                #time.sleep(12)
+                try:
+                    LOG.info('start wamp client')
+                    res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
+
+                    try:
+                        LOG.info('Configuration of the VIF')
+                        res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
+                    except:
+                        LOG.error("Error while configuring the VIF")
+                except:
+                    LOG.error('wamp client error')
+            except:
+                LOG.error('Error while creating the VIF')
+
+        except Exception as e:
+            LOG.error(str(e))
+
+
+
+
+
+
+            #return res
+            #try:
+            #res1 = self.execute_on_board(ctx, board_uuid, "Create_VIF", (r_tcp_port,))
+            #return str(res)
+            return 1
+        except Exception as e:
+            LOG.error(str(e))
+            return 0
+            #time.sleep(10)
+            #LOG.info('10 seconds')
+        #time.sleep(12)
+
+        #except Exception as e:
+        #    LOG.error(str(e))
+        #    return 0
+
 
 
 

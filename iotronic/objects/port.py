@@ -30,14 +30,14 @@ class Port(base.IotronicObject):
 
     fields = {
         'id': int,
-        'uuid': obj_utils.str_or_none,
-        'name': obj_utils.str_or_none,
-        'network_uuid': obj_utils.str_or_none,
-        'project': obj_utils.str_or_none,
+        'port_uuid': obj_utils.str_or_none,
+        #'name': obj_utils.str_or_none,
+        #'network_uuid': obj_utils.str_or_none,
+        #'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
-        'ip': obj_utils.str_or_none,
+        #'ip': obj_utils.str_or_none,
         'board_uuid': obj_utils.str_or_none,
-        'status': obj_utils.str_or_none,
+        #'status': obj_utils.str_or_none,
     }
 
     @staticmethod

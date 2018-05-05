@@ -253,19 +253,19 @@ class ExposedService(Base):
 class Port(Base):
     """Represents a port on board."""
 
-    __tablename__ = 'ports_on_board'
-    __table_args__ = (
-        schema.UniqueConstraint('uuid', name='uniq_ports0uuid'),
-        table_args()
-    )
+    __tablename__ = 'ports_on_boards'
+    #__table_args__ = (
+    #    schema.UniqueConstraint('uuid', name='uniq_ports0uuid'),
+    #    table_args()
+    #)
     id = Column(Integer, primary_key=True)
     board_uuid = Column(String(36), ForeignKey('boards.uuid'))
-    uuid = Column(String(36))
-    name = Column(String(36))
-    project = Column(String(36))
+    port_uuid = Column(String(32))
+    #name = Column(String(36))
+    #project = Column(String(36))
     MAC_add = Column(String(36))
-    ip = Column(String(36))
-    status = Column(String(36))
-    network = Column(String(36))
+    #ip = Column(String(36))
+    #status = Column(String(36))
+    #network = Column(String(36))
 
 
