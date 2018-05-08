@@ -243,3 +243,20 @@ def add_port_to_network(wagent, network_uuid, security_groups=None):
                      'exc': e})
     else:
         return port
+
+def delete_port(wagent, port_uuid):
+
+    client = get_client()
+    LOG.debug('For wagent %(wagent)s, removing neutron port %(port_uuid)s',
+                  {'wagent': wagent,'port_uuid':port_uuid})
+    try:
+        port = client.delete_port(port_uuid)
+        return 1
+
+    except neutron_exceptions.NeutronClientException as e:
+        LOG.warning("Could not delete neutron port from wagent's "
+                    "%(wagent)s : %(exc)s ",{'wagent': wagent, 'exc':e})
+        return 0
+
+
+

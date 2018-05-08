@@ -237,6 +237,9 @@ class ServiceAction(base.APIBase):
 class Network(base.APIBase):
     network_uuid = types.jsontype
 
+class Port(base.APIBase):
+    port_uuid = types.jsontype
+
 
 class BoardPluginsController(rest.RestController):
     def __init__(self, board_ident):
@@ -479,6 +482,20 @@ class BoardPortsController(rest.RestController):
         result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
                                                      rpc_board.uuid, Network.network_uuid)
         return result
+
+
+
+    def delete(self, Port):
+        if not Network.network_uuid:
+            raise exception.MissingParameterValue(
+                ("Network is not specified."))
+
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
+
+        result = pecan.request.rpcapi.remove_port_from_board(pecan.request.context,
+                                                           rpc_board.uuid, Port.port_uuid)
+        return result
+
 
     ###def put(self):
 

@@ -16,6 +16,7 @@
 import asyncio
 import txaio
 import subprocess
+import time
 
 from iotronic.common import exception
 from iotronic.common.i18n import _LI
@@ -86,10 +87,10 @@ class WampEndpoint(object):
         return r.result()
 
     def create_tap_interface(self, ctx, port_uuid, tcp_port):
+        time.sleep(12)
         LOG.debug('Creating tap interface on the wamp agent host')
-
         p = subprocess.Popen('socat -d -d TCP:localhost:'+tcp_port+',reuseaddr,forever,'
-                            'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up &'
+                            'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up '
                              , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return 1
 
@@ -139,6 +140,7 @@ class RPCServer(Thread):
         LOG.info("Starting AMQP server... ")
         self.server.start()
         self.server1.start()
+
 
     def stop(self):
         LOG.info("Stopping AMQP server... ")

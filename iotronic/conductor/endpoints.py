@@ -409,8 +409,8 @@ class ConductorEndpoint(object):
             port_mac = str(port['port']['mac_address'])
 
             port_socat = random.randint(10000,20000)
-            LOG.info(str(port_socat))
-            LOG.info(str(port_mac))
+            #LOG.info(str(port_socat))
+            #LOG.info(str(port_mac))
 
             i=0
             while i<len(Port):
@@ -421,9 +421,9 @@ class ConductorEndpoint(object):
 
             global Port
             Port.insert(0,port_socat)
-            LOG.info(Port)
+            #LOG.info(Port)
             r_tcp_port = str(port_socat)
-            LOG.info(str(port_socat))
+            #LOG.info(str(port_socat))
 
 
             s4t_topic = 'create_tap_interface'
@@ -431,21 +431,25 @@ class ConductorEndpoint(object):
             self.target.topic = full_topic
 
             try:
-
                 LOG.info('Creation of the VIF on the board')
                 res1 = self.execute_on_board(ctx, board_uuid, "Create_VIF", (r_tcp_port,))
                 #time.sleep(12)
+
                 try:
-                    LOG.info('start wamp client')
+                    LOG.debug('starting the wamp client')
                     res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
 
                     try:
-                        LOG.info('Configuration of the VIF')
+                        LOG.debug('Configuration of the VIF')
                         res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
+
+
                     except:
                         LOG.error("Error while configuring the VIF")
+
                 except:
                     LOG.error('wamp client error')
+
             except:
                 LOG.error('Error while creating the VIF')
 
@@ -453,6 +457,24 @@ class ConductorEndpoint(object):
             LOG.error(str(e))
 
 
+    def remove_port_from_board(self, ctx, board_uuid, port_uuid):
+
+        LOG.info('removing the port %s from board %s',
+                 port_uuid, board_uuid)
+
+        board = objects.Board.get_by_uuid(ctx, board_uuid)
+
+        try:
+
+            port = neutron.delete_port(board.agent, port_uuid)
+
+            #try:
+                #LOG.debug('Removing VIF from board %s',board_uuid)
+                #res = self.execute_on_board(ctx, board_uuid, "Remove_VIF", (port_name,))
+
+
+        except Exception as e:
+            LOG.error(str(e))
 
 
 
@@ -461,10 +483,10 @@ class ConductorEndpoint(object):
             #try:
             #res1 = self.execute_on_board(ctx, board_uuid, "Create_VIF", (r_tcp_port,))
             #return str(res)
-            return 1
-        except Exception as e:
-            LOG.error(str(e))
-            return 0
+            #return 1
+        #except Exception as e:
+        #    LOG.error(str(e))
+        #    return 0
             #time.sleep(10)
             #LOG.info('10 seconds')
         #time.sleep(12)

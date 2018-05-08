@@ -261,7 +261,7 @@ class Port(Base):
     id = Column(Integer, primary_key=True)
     board_uuid = Column(String(36), ForeignKey('boards.uuid'))
     port_uuid = Column(String(32))
-    #name = Column(String(36))
+    #name = Column(String(15))
     #project = Column(String(36))
     MAC_add = Column(String(36))
     #ip = Column(String(36))
