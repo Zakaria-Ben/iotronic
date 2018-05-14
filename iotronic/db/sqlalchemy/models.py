@@ -255,15 +255,15 @@ class Port(Base):
 
     __tablename__ = 'ports_on_boards'
     #__table_args__ = (
-    #    schema.UniqueConstraint('uuid', name='uniq_ports0uuid'),
+    #    schema.UniqueConstraint('port_uuid', name='uniq_ports0uuid'),
     #    table_args()
     #)
     id = Column(Integer, primary_key=True)
-    board_uuid = Column(String(36), ForeignKey('boards.uuid'))
-    port_uuid = Column(String(32))
-    #name = Column(String(15))
+    board_uuid = Column(String(40), ForeignKey('boards.uuid'))
+    uuid = Column(String(40))
+    VIF_name = Column(String(30))
     #project = Column(String(36))
-    MAC_add = Column(String(36))
+    MAC_add = Column(String(32))
     #ip = Column(String(36))
     #status = Column(String(36))
     #network = Column(String(36))

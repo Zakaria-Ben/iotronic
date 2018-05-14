@@ -397,12 +397,9 @@ class ConductorEndpoint(object):
         try:
                    ################# Creation of the port on the DB
 
+
             port = neutron.add_port_to_network(board.agent,network_uuid)
             p = str(port ['port']['id'])
-            port_iotronic.port_uuid = port ['port']['id']
-            port_iotronic.MAC_add = port ['port']['mac_address']
-            port_iotronic.board_uuid = board_uuid
-            port_iotronic.create()
 
                    #################
 
@@ -442,8 +439,18 @@ class ConductorEndpoint(object):
                     try:
                         LOG.debug('Configuration of the VIF')
                         res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
+                        try:
+                            LOG.info('Updating the DB')
+                            VIF = str("iotronic" + str(r_tcp_port))
+                            port_iotronic.VIF_name = VIF
+                            port_iotronic.uuid = port['port']['id']
+                            port_iotronic.MAC_add = port['port']['mac_address']
+                            port_iotronic.board_uuid = str(board_uuid)
+                            port_iotronic.create()
 
-
+                            LOG.info('DB update succeded')
+                        except Exception as e:
+                            LOG.error('Error while updating the DB :'+str(e))
                     except:
                         LOG.error("Error while configuring the VIF")
 
@@ -457,19 +464,31 @@ class ConductorEndpoint(object):
             LOG.error(str(e))
 
 
-    def remove_port_from_board(self, ctx, board_uuid, port_uuid):
+    def remove_VIF_from_board(self, ctx, board_uuid, port_uuid):
 
         LOG.info('removing the port %s from board %s',
                  port_uuid, board_uuid)
 
         board = objects.Board.get_by_uuid(ctx, board_uuid)
+        port = objects.Port.get_by_uuid(ctx, port_uuid)
+        VIF_name = str(port.VIF_name)
 
         try:
 
-            port = neutron.delete_port(board.agent, port_uuid)
+            self.execute_on_board(ctx, board_uuid, "Remove_VIF",(VIF_name,))
+
+            try:
+                LOG.info("Removing the port from Neutron and Iotronic databases")
+                port1 = neutron.delete_port(board.agent, port_uuid)
+                LOG.info("port removed from Neutron DB")
+                #port2 = objects.Port.destroy()
+                port.destroy()
+                LOG.info("Port removed from Iotronic DB")
+            except Exception as e:
+                LOG.error(str(e))
 
             #try:
-                #LOG.debug('Removing VIF from board %s',board_uuid)
+            #    LOG.debug('Removing VIF from board %s',board_uuid)
                 #res = self.execute_on_board(ctx, board_uuid, "Remove_VIF", (port_name,))
 
 

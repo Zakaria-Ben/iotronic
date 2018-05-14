@@ -30,8 +30,8 @@ class Port(base.IotronicObject):
 
     fields = {
         'id': int,
-        'port_uuid': obj_utils.str_or_none,
-        #'name': obj_utils.str_or_none,
+        'uuid': obj_utils.str_or_none,
+        'VIF_name': obj_utils.str_or_none,
         #'network_uuid': obj_utils.str_or_none,
         #'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
@@ -74,13 +74,13 @@ class Port(base.IotronicObject):
         return port
 
     @base.remotable_classmethod
-    def get_by_uuid(cls, context, uuid):
-        """Find a port based on uuid and return a Board object.
+    def get_by_uuid(cls, context, port_uuid):
+        """Find a port based on uuid and return a port object.
 
         :param uuid: the uuid of a port.
-        :returns: a :class:`Board` object.
+        :returns: a :class:`Port` object.
         """
-        db_port = cls.dbapi.get_port_by_uuid(uuid)
+        db_port = cls.dbapi.get_port_by_uuid(port_uuid)
         port = Port._from_db_object(cls(context), db_port)
         return port
 

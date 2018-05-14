@@ -304,7 +304,7 @@ class ConductorAPI(object):
     ###    return cctxt.call(context, 'test',
     ###                      board_uuid=board_uuid)
 
-    def remove_port_from_board(self, context, port_uuid, topic=None):
+    def remove_port_from_board(self, context,board_uuid, port_uuid, topic=None):
         """remove a port from a Board
 
                 :param context: request context.
@@ -314,5 +314,5 @@ class ConductorAPI(object):
 
                 """
         cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
-        return cctxt.call(context, 'remove_port_from_board',
+        return cctxt.call(context, 'remove_VIF_from_board', board_uuid=board_uuid,
                           port_uuid=port_uuid)

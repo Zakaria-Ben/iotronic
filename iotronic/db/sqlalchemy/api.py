@@ -897,11 +897,11 @@ class Connection(api.Connection):
         port.save()
         return port
 
-    def destroy_port(self, port_uuid):
+    def destroy_port(self, uuid):
         session = get_session()
         with session.begin():
             query = model_query(models.Port, session=session)
-            query = add_identity_filter(query, port_uuid)
+            query = add_identity_filter(query, uuid)
             count = query.delete()
             if count == 0:
-                raise exception.PortNotFound(uuid=port_uuid)
+                raise exception.PortNotFound(uuid=uuid)
