@@ -94,6 +94,30 @@ def get_rpc_board(board_ident):
 
     raise exception.BoardNotFound(board=board_ident)
 
+def get_rpc_port(port_ident):
+    """Get the RPC board from the board uuid or logical name.
+
+    :param board_ident: the UUID or logical name of a board.
+
+    :returns: The RPC Board.
+    :raises: InvalidUuidOrName if the name or uuid provided is not valid.
+    :raises: BoardNotFound if the board is not found.
+    """
+    # Check to see if the board_ident is a valid UUID.  If it is, treat it
+    # as a UUID.
+    if uuidutils.is_uuid_like(port_ident):
+        return objects.Port.get_by_uuid(pecan.request.context, port_ident)
+
+    # We can refer to boards by their name, if the client supports it
+    # if allow_board_logical_names():
+    #    if utils.is_hostname_safe(board_ident):
+    else:
+        return objects.Port.get_by_name(pecan.request.context, port_ident)
+
+    raise exception.InvalidUuidOrName(name=port_ident)
+
+    raise exception.PortNotFound(port=port_ident)
+
 
 def get_rpc_plugin(plugin_ident):
     """Get the RPC plugin from the plugin uuid or logical name.

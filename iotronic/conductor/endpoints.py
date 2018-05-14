@@ -447,8 +447,9 @@ class ConductorEndpoint(object):
                             port_iotronic.MAC_add = port['port']['mac_address']
                             port_iotronic.board_uuid = str(board_uuid)
                             port_iotronic.create()
+                            return port_iotronic
 
-                            LOG.info('DB update succeded')
+                            #LOG.info('DB update succeded')
                         except Exception as e:
                             LOG.error('Error while updating the DB :'+str(e))
                     except:
@@ -462,6 +463,7 @@ class ConductorEndpoint(object):
 
         except Exception as e:
             LOG.error(str(e))
+
 
 
     def remove_VIF_from_board(self, ctx, board_uuid, port_uuid):

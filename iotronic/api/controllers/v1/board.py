@@ -485,21 +485,22 @@ class BoardPortsController(rest.RestController):
         return result
 
 
-    @expose.expose(wtypes.text, types.uuid_or_name, body=Port,
-                   status_code=200)
-    def delete(self, Port):
+    @expose.expose(wtypes.text, types.uuid_or_name,
+                   status_code=204)
+    def delete(self, port):
 
-        if not Port.port_uuid:
+        if not port:
             raise exception.MissingParameterValue(
                 ("Port is not specified."))
 
         rpc_board = api_utils.get_rpc_board(self.board_ident)
+        rpc_port = api_utils.get_rpc_port(port)
 
         rpc_board.check_if_online()
 
         result = pecan.request.rpcapi.remove_port_from_board(pecan.request.context,
-                                                           rpc_board.uuid, Port.port_uuid)
-        return result
+                                                           rpc_board.uuid, rpc_port.uuid)
+        return
 
 
     ###def put(self):
