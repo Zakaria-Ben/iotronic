@@ -212,11 +212,12 @@ def _verify_security_groups(security_groups, client):
         LOG.error(msg)
         raise exception.NetworkError(msg)
 
-def add_port_to_network(wagent, network_uuid, security_groups=None):
+def add_port_to_network(wagent, network_uuid, subnet_uuid, security_groups=None):
 
     client = get_client()
     _verify_security_groups(security_groups, client)
 
+    #subnet_uuid = str("006ec006-b7ba-4e17-9aab-a87ebcc6ed6f")
     LOG.debug('For wagent %(wagent)s, creating neutron port on network '
               '%(network_uuid)s.',
               {'wagent': wagent, 'network_uuid': network_uuid})
@@ -226,7 +227,10 @@ def add_port_to_network(wagent, network_uuid, security_groups=None):
             'network_id': network_uuid,
             'admin_state_up': True,
             'device_owner': 'iotronic:none',
-            'binding:host_id': wagent
+            'binding:host_id': wagent,
+            'fixed_ips': [{
+                'subnet_id': subnet_uuid
+            }]
         }
     }
 

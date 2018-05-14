@@ -385,7 +385,7 @@ class ConductorEndpoint(object):
     ###    LOG.info('Test RPC %s',board_uuid)
     ###    return 1
 
-    def create_port_on_board(self, ctx, board_uuid, network_uuid):
+    def create_port_on_board(self, ctx, board_uuid, network_uuid, subnet_uuid):
 
         LOG.info('Creation of a port on the board %s in the network',
                  board_uuid)
@@ -398,7 +398,7 @@ class ConductorEndpoint(object):
                    ################# Creation of the port on the DB
 
 
-            port = neutron.add_port_to_network(board.agent,network_uuid)
+            port = neutron.add_port_to_network(board.agent,network_uuid,subnet_uuid)
             p = str(port ['port']['id'])
 
                    #################

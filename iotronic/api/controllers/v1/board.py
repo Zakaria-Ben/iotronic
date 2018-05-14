@@ -236,6 +236,7 @@ class ServiceAction(base.APIBase):
 
 class Network(base.APIBase):
     network_uuid = types.jsontype
+    subnet_uuid = types.jsontype
 
 class Port(base.APIBase):
     port_uuid = types.jsontype
@@ -480,7 +481,7 @@ class BoardPortsController(rest.RestController):
         rpc_board.check_if_online()
 
         result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
-                                                     rpc_board.uuid, Network.network_uuid)
+                                                     rpc_board.uuid, Network.network_uuid, Network.subnet_uuid)
         return result
 
 
