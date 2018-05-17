@@ -446,6 +446,8 @@ class ConductorEndpoint(object):
                             port_iotronic.uuid = port['port']['id']
                             port_iotronic.MAC_add = port['port']['mac_address']
                             port_iotronic.board_uuid = str(board_uuid)
+                            port_iotronic.network = port['port']['fixed_ips'][0]['subnet_id']
+                            port_iotronic.ip = port['port']['fixed_ips'][0]['ip_address']
                             port_iotronic.create()
                             return port_iotronic
 

@@ -17,6 +17,7 @@ from iotronic.api.controllers.v1 import collection
 from iotronic.api.controllers.v1 import location as loc
 from iotronic.api.controllers.v1 import types
 from iotronic.api.controllers.v1 import utils as api_utils
+from iotronic.api.controllers.v1 import port
 from iotronic.api import expose
 from iotronic.common import exception
 from iotronic.common import policy
@@ -122,10 +123,14 @@ class BoardCollection(collection.Collection):
 
 ###################################################
 
-class CreationPort(base.APIBase):
+class Port(base.APIBase):
 
-    network_uuid = types.uuid_or_name
     board_uuid = types.uuid_or_name
+    uuid = types.uuid_or_name
+    VIF_name = wtypes.text
+    MAC_add =  wtypes.text
+    ip = wtypes.text
+    network = wtypes.text
 
     def __init__(self, **kwargs):
         self.fields = []
@@ -137,16 +142,17 @@ class CreationPort(base.APIBase):
                 continue
             self.fields.append(k)
             setattr(self, k, kwargs.get(k, wtypes.Unset))
-        setattr(self, 'port', kwargs.get('port_uuid', wtypes.Unset))
+        setattr(self, 'uuid', kwargs.get('uuid', wtypes.Unset))
 
 class PortCollection(collection.Collection):
 
+
     """API representation of a collection of ports."""
 
-    ports = [CreationPort]
+    ports = [Port]
 
     def __init__(self, **kwargs):
-        self._type = 'creation'
+        self._type = 'port'
 
     @staticmethod
     def get_list(ports, fields=None):
@@ -237,10 +243,6 @@ class ServiceAction(base.APIBase):
 class Network(base.APIBase):
     network = types.jsontype
     subnet = types.jsontype
-
-class Port(base.APIBase):
-    port_uuid = types.jsontype
-
 
 class BoardPluginsController(rest.RestController):
     def __init__(self, board_ident):
@@ -452,21 +454,12 @@ class BoardPortsController(rest.RestController):
     def __init__(self, board_ident):
         self.board_ident = board_ident
 
-
     def _get_ports_on_board_collection(self, board_uuid, fields=None):
         ports = objects.Port.list(pecan.request.context,
                                                board_uuid)
-        return PortCollection.get_list(ports,
+
+        return ExposedCollection.get_list(ports,
                                           fields=fields)
-
-    @expose.expose(PortCollection,status_code=200)
-    def get_all(self):
-        """Retrieve a list of ports of a board.
-
-       """
-        rpc_board = api_utils.get_rpc_board(self.board_ident)
-
-        return self._get_ports_on_board_collection(rpc_board.uuid)
 
     @expose.expose(wtypes.text, types.uuid_or_name, body=Network,
                    status_code=200)
@@ -502,6 +495,19 @@ class BoardPortsController(rest.RestController):
                                                            rpc_board.uuid, rpc_port.uuid)
         return
 
+    @expose.expose(PortCollection,
+                   status_code=200)
+    def get_all(self):
+        """Retrieve a list of plugins of a board.
+
+        """
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
+
+        cdict = pecan.request.context.to_policy_values()
+        cdict['owner'] = rpc_board.owner
+        policy.authorize('iot:port_on_board:get', cdict, cdict)
+
+        return self._get_ports_on_board_collection(rpc_board.uuid)
 
     ###def put(self):
 
@@ -530,6 +536,8 @@ class BoardsController(rest.RestController):
     _custom_actions = {
         'detail': ['GET'],
     }
+
+
 
     @pecan.expose()
     def _lookup(self, ident, *remainder):
@@ -748,5 +756,8 @@ class BoardsController(rest.RestController):
                                            limit, sort_key, sort_dir,
                                            project=project,
                                            fields=fields)
+
+
+
 
 

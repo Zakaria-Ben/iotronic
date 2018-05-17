@@ -179,6 +179,25 @@ class Connection(api.Connection):
 
         return query
 
+    def _add_ports_filters(self, query, filters):
+        if filters is None:
+            filters = []
+
+        #if 'owner' in filters:
+        #    if 'with_public' in filters and filters['with_public']:
+        #        query = query.filter(
+        #            or_(
+        #                models.Port.owner == filters['owner'],
+        #                models.Port.public == 1)
+        #        )
+        #    else:
+        #        query = query.filter(models.Port.owner == filters['owner'])
+
+        #elif 'public' in filters and filters['public']:
+        #    query = query.filter(models.Port.public == 1)
+
+        return query
+
     def _do_update_board(self, board_id, values):
         session = get_session()
         with session.begin():
@@ -885,11 +904,13 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.NoPortsManaged(wamp_agent_id=wamp_agent_id)
 
-    def get_ports_list(self, board_uuid):
-        query = model_query(
-            models.Port).filter_by(
-            board_uuid=board_uuid)
-        return query.all()
+    def get_port_list(self, filters=None, limit=None, marker=None,
+                        sort_key=None, sort_dir=None):
+        query = model_query(models.Port)
+        query = self._add_ports_filters(query, filters)
+        return _paginate_query(models.Port, limit, marker,
+                               sort_key, sort_dir, query)
+
 
     def create_port(self, values):
         port = models.Port()

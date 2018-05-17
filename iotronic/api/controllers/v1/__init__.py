@@ -27,6 +27,7 @@ from iotronic.api.controllers import base
 from iotronic.api.controllers import link
 from iotronic.api.controllers.v1 import plugin
 from iotronic.api.controllers.v1 import service
+from iotronic.api.controllers.v1 import port
 # from iotronic.api.controllers.v1 import driver
 # from iotronic.api.controllers.v1 import port
 # from iotronic.api.controllers.v1 import portgroup
@@ -67,6 +68,9 @@ class V1(base.APIBase):
     services = [link.Link]
     """Links to the boards resource"""
 
+    ports = [link.Link]
+    """Links to the boards resource"""
+
     @staticmethod
     def convert():
         v1 = V1()
@@ -104,6 +108,14 @@ class V1(base.APIBase):
                                            bookmark=True)
                        ]
 
+        v1.ports = [link.Link.make_link('self', pecan.request.public_url,
+                                           'ports', ''),
+                       link.Link.make_link('bookmark',
+                                           pecan.request.public_url,
+                                           'ports', '',
+                                           bookmark=True)
+                       ]
+
         return v1
 
 
@@ -113,6 +125,7 @@ class Controller(rest.RestController):
     boards = board.BoardsController()
     plugins = plugin.PluginsController()
     services = service.ServicesController()
+    ports = port.PortsController()
 
     @expose.expose(V1)
     def get(self):

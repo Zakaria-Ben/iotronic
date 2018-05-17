@@ -156,6 +156,8 @@ port_policies = [
                        description='Retrieve Port records'),
     policy.RuleDefault('iot:port_creation:put', 'rule:admin_or_owner',
                        description='Create a Port record'),
+    policy.RuleDefault('iot:port:get_one', 'rule:admin_or_owner',
+                       description='Retrieve a Port record'),
 
 ]
 

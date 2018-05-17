@@ -264,8 +264,8 @@ class Port(Base):
     VIF_name = Column(String(30))
     #project = Column(String(36))
     MAC_add = Column(String(32))
-    #ip = Column(String(36))
+    ip = Column(String(36))
     #status = Column(String(36))
-    #network = Column(String(36))
+    network = Column(String(36))
 
 

@@ -32,10 +32,10 @@ class Port(base.IotronicObject):
         'id': int,
         'uuid': obj_utils.str_or_none,
         'VIF_name': obj_utils.str_or_none,
-        #'network_uuid': obj_utils.str_or_none,
+        'network': obj_utils.str_or_none,
         #'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
-        #'ip': obj_utils.str_or_none,
+        'ip': obj_utils.str_or_none,
         'board_uuid': obj_utils.str_or_none,
         #'status': obj_utils.str_or_none,
     }
@@ -130,8 +130,9 @@ class Port(base.IotronicObject):
                 for obj in db_wamp]
 
     @base.remotable_classmethod
-    def list(cls, context, board_uuid):
-        """Return a list of Ports objects.
+    def list(cls, context, limit=None, marker=None, sort_key=None,
+             sort_dir=None, filters=None):
+        """Return a list of Plugin objects.
 
         :param context: Security context.
         :param limit: maximum number of resources to return in a single result.
@@ -139,12 +140,16 @@ class Port(base.IotronicObject):
         :param sort_key: column to sort results by.
         :param sort_dir: direction to sort. "asc" or "desc".
         :param filters: Filters to apply.
-        :returns: a list of :class:`Port` object.
+        :returns: a list of :class:`Plugin` object.
 
         """
-        db_exps = cls.dbapi.get_ports_list(board_uuid)
+        db_ports = cls.dbapi.get_port_list(filters=filters,
+                                               limit=limit,
+                                               marker=marker,
+                                               sort_key=sort_key,
+                                               sort_dir=sort_dir)
         return [Port._from_db_object(cls(context), obj)
-                for obj in db_exps]
+                for obj in db_ports]
 
     @base.remotable
     def create(self, context=None):
