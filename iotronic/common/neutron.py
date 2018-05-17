@@ -226,7 +226,7 @@ def add_port_to_network(wagent, network_uuid, subnet_uuid, security_groups=None)
         'port': {
             'network_id': network_uuid,
             'admin_state_up': True,
-            'device_owner': 'iotronic:none',
+            'device_owner': 'IOT:board',
             'binding:host_id': wagent,
             'fixed_ips': [{
                 'subnet_id': subnet_uuid

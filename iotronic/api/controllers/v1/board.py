@@ -152,7 +152,7 @@ class PortCollection(collection.Collection):
     ports = [Port]
 
     def __init__(self, **kwargs):
-        self._type = 'port'
+        self._type = 'ports'
 
     @staticmethod
     def get_list(ports, fields=None):
@@ -160,6 +160,8 @@ class PortCollection(collection.Collection):
         collection.ports = [PortCollection(**n.as_dict())
                               for n in ports]
         return collection
+
+
 #######################################################
 
 class InjectionPlugin(base.APIBase):
@@ -458,7 +460,7 @@ class BoardPortsController(rest.RestController):
         ports = objects.Port.list(pecan.request.context,
                                                board_uuid)
 
-        return ExposedCollection.get_list(ports,
+        return PortCollection.get_list(ports,
                                           fields=fields)
 
     @expose.expose(wtypes.text, types.uuid_or_name, body=Network,
@@ -495,19 +497,51 @@ class BoardPortsController(rest.RestController):
                                                            rpc_board.uuid, rpc_port.uuid)
         return
 
-    @expose.expose(PortCollection,
-                   status_code=200)
-    def get_all(self):
-        """Retrieve a list of plugins of a board.
+    #@expose.expose(PortCollection,
+    #               status_code=200)
+    #def get_all(self):
+    #    """Retrieve a list of plugins of a board.
 
+    #    """
+    #    rpc_board = api_utils.get_rpc_board(self.board_ident)
+
+    #    cdict = pecan.request.context.to_policy_values()
+    #    cdict['owner'] = rpc_board.owner
+    #    policy.authorize('iot:port_on_board:get', cdict, cdict)
+
+    #    return self._get_ports_on_board_collection(rpc_board.uuid)
+
+    @expose.expose(PortCollection, types.uuid, int, wtypes.text,
+                   wtypes.text, types.listtype, types.boolean, types.boolean)
+    def get_all(self, marker=None,
+                limit=None, sort_key='id', sort_dir='asc',
+                fields=None, with_public=False, all_ports=False):
+        """Retrieve a list of plugins.
+
+        :param marker: pagination marker for large data sets.
+        :param limit: maximum number of resources to return in a single result.
+                      This value cannot be larger than the value of max_limit
+                      in the [api] section of the ironic configuration, or only
+                      max_limit resources will be returned.
+        :param sort_key: column to sort results by. Default: id.
+        :param sort_dir: direction to sort. "asc" or "desc". Default: asc.
+        :param with_public: Optional boolean to get also public pluings.
+        :param all_plugins: Optional boolean to get all the pluings.
+                            Only for the admin
+        :param fields: Optional, a list with a specified set of fields
+                       of the resource to be returned.
         """
-        rpc_board = api_utils.get_rpc_board(self.board_ident)
-
         cdict = pecan.request.context.to_policy_values()
-        cdict['owner'] = rpc_board.owner
         policy.authorize('iot:port_on_board:get', cdict, cdict)
 
-        return self._get_ports_on_board_collection(rpc_board.uuid)
+        if fields is None:
+            fields = _DEFAULT_RETURN_FIELDS
+        return self._get_ports_collection(marker,
+                                          limit, sort_key, sort_dir,
+                                          with_public=with_public,
+                                          all_ports=all_ports,
+                                          fields=fields)
+
 
     ###def put(self):
 

@@ -437,25 +437,25 @@ class ConductorEndpoint(object):
                     res = self.wamp_agent_client.call(ctx, full_topic, port_uuid=p, tcp_port=r_tcp_port)
 
                     try:
-                        LOG.debug('Configuration of the VIF')
-                        res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
+                        LOG.info('Updating the DB')
+                        VIF = str("iotronic" + str(r_tcp_port))
+                        port_iotronic.VIF_name = VIF
+                        port_iotronic.uuid = port['port']['id']
+                        port_iotronic.MAC_add = port['port']['mac_address']
+                        port_iotronic.board_uuid = str(board_uuid)
+                        port_iotronic.network = port['port']['fixed_ips'][0]['subnet_id']
+                        port_iotronic.ip = port['port']['fixed_ips'][0]['ip_address']
+                        port_iotronic.create()
+
                         try:
-                            LOG.info('Updating the DB')
-                            VIF = str("iotronic" + str(r_tcp_port))
-                            port_iotronic.VIF_name = VIF
-                            port_iotronic.uuid = port['port']['id']
-                            port_iotronic.MAC_add = port['port']['mac_address']
-                            port_iotronic.board_uuid = str(board_uuid)
-                            port_iotronic.network = port['port']['fixed_ips'][0]['subnet_id']
-                            port_iotronic.ip = port['port']['fixed_ips'][0]['ip_address']
-                            port_iotronic.create()
+                            LOG.debug('Configuration of the VIF')
+                            res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
                             return port_iotronic
 
-                            #LOG.info('DB update succeded')
                         except Exception as e:
-                            LOG.error('Error while updating the DB :'+str(e))
+                            LOG.error("Error while configuring the VIF")
                     except:
-                        LOG.error("Error while configuring the VIF")
+                        LOG.error('Error while updating the DB :' + str(e))
 
                 except:
                     LOG.error('wamp client error')
