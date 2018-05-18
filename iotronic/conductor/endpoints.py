@@ -394,6 +394,10 @@ class ConductorEndpoint(object):
         port_iotronic = objects.Port(ctx)
 
         port_mac = ""
+        subnet_info = neutron.subnet_info(subnet_uuid)
+        cidr = str(subnet_info['subnet']['cidr'])
+        slash = cidr.split("/",1)[1]
+
         try:
                    ################# Creation of the port on the DB
 
@@ -449,7 +453,7 @@ class ConductorEndpoint(object):
 
                         try:
                             LOG.debug('Configuration of the VIF')
-                            res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac,))
+                            res2 = self.execute_on_board(ctx, board_uuid, "Configure_VIF", (port_mac, port_iotronic.ip, slash,))
                             return port_iotronic
 
                         except Exception as e:

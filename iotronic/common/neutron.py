@@ -119,6 +119,16 @@ def get_client(token=None):
     return clientv20.Client(**params)
 
 """
+
+def subnet_info(subnet_uuid):
+    client = get_client()
+    try:
+        info = client.show_subnet(subnet_uuid)
+        return info
+    except Exception as e:
+        LOG.error(str(e))
+
+
 def unbind_neutron_port(port_id, client=None):
     """Unbind a neutron port
 
