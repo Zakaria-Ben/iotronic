@@ -17,7 +17,6 @@ from iotronic.api.controllers.v1 import collection
 from iotronic.api.controllers.v1 import location as loc
 from iotronic.api.controllers.v1 import types
 from iotronic.api.controllers.v1 import utils as api_utils
-from iotronic.api.controllers.v1 import port
 from iotronic.api import expose
 from iotronic.common import exception
 from iotronic.common import policy
@@ -121,14 +120,13 @@ class BoardCollection(collection.Collection):
         collection.next = collection.get_next(limit, url=url, **kwargs)
         return collection
 
-###################################################
 
 class Port(base.APIBase):
 
-    board_uuid = types.uuid_or_name
-    uuid = types.uuid_or_name
+    board_uuid = types.uuid
+    uuid = types.uuid
     VIF_name = wtypes.text
-    MAC_add =  wtypes.text
+    MAC_add = wtypes.text
     ip = wtypes.text
     network = wtypes.text
 
@@ -144,8 +142,8 @@ class Port(base.APIBase):
             setattr(self, k, kwargs.get(k, wtypes.Unset))
         setattr(self, 'uuid', kwargs.get('uuid', wtypes.Unset))
 
-class PortCollection(collection.Collection):
 
+class PortCollection(collection.Collection):
 
     """API representation of a collection of ports."""
 
@@ -157,12 +155,10 @@ class PortCollection(collection.Collection):
     @staticmethod
     def get_list(ports, fields=None):
         collection = PortCollection()
-        collection.ports = [PortCollection(**n.as_dict())
-                              for n in ports]
+        collection.ports = [Port(**n.as_dict())
+                            for n in ports]
         return collection
 
-
-#######################################################
 
 class InjectionPlugin(base.APIBase):
     plugin = types.uuid_or_name
@@ -242,9 +238,12 @@ class ServiceAction(base.APIBase):
     action = wsme.wsattr(wtypes.text)
     parameters = types.jsontype
 
+
 class Network(base.APIBase):
     network = types.jsontype
     subnet = types.jsontype
+    security_groups = types.jsontype
+
 
 class BoardPluginsController(rest.RestController):
     def __init__(self, board_ident):
@@ -370,6 +369,7 @@ class BoardPluginsController(rest.RestController):
                                                   rpc_plugin.uuid,
                                                   rpc_board.uuid)
 
+
 class BoardServicesController(rest.RestController):
 
     _custom_actions = {
@@ -449,7 +449,6 @@ class BoardServicesController(rest.RestController):
 
         return self._get_services_on_board_collection(rpc_board.uuid)
 
-################################## Port
 
 class BoardPortsController(rest.RestController):
 
@@ -457,11 +456,21 @@ class BoardPortsController(rest.RestController):
         self.board_ident = board_ident
 
     def _get_ports_on_board_collection(self, board_uuid, fields=None):
+        filters = {}
+        filters['board_uuid'] = board_uuid
         ports = objects.Port.list(pecan.request.context,
-                                               board_uuid)
+                                  filters=filters)
 
-        return PortCollection.get_list(ports,
-                                          fields=fields)
+        return PortCollection.get_list(ports, fields=fields)
+
+    def get_port_detail(self, board_uuid, port_uuid):
+        filters = {}
+        filters['board_uuid'] = board_uuid
+        ports = objects.Port.list(pecan.request.context,
+                                  filters=filters)
+        for port in ports:
+            if port.uuid == port_uuid:
+                return port
 
     @expose.expose(wtypes.text, types.uuid_or_name, body=Network,
                    status_code=200)
@@ -475,10 +484,11 @@ class BoardPortsController(rest.RestController):
 
         rpc_board.check_if_online()
 
-        result = pecan.request.rpcapi.create_port_on_board(pecan.request.context,
-                                                     rpc_board.uuid, Network.network, Network.subnet)
+        result = pecan.request.rpcapi.\
+            create_port_on_board(pecan.request.context, rpc_board.uuid,
+                                 Network.network, Network.subnet,
+                                 Network.security_groups)
         return result
-
 
     @expose.expose(wtypes.text, types.uuid_or_name,
                    status_code=204)
@@ -493,68 +503,31 @@ class BoardPortsController(rest.RestController):
 
         rpc_board.check_if_online()
 
-        result = pecan.request.rpcapi.remove_port_from_board(pecan.request.context,
-                                                           rpc_board.uuid, rpc_port.uuid)
+        pecan.request.rpcapi.remove_port_from_board(
+            pecan.request.context, rpc_board.uuid, rpc_port.uuid)
         return
 
-    #@expose.expose(PortCollection,
-    #               status_code=200)
-    #def get_all(self):
-    #    """Retrieve a list of plugins of a board.
+    @expose.expose(PortCollection, status_code=200)
+    def get_all(self):
 
-    #    """
-    #    rpc_board = api_utils.get_rpc_board(self.board_ident)
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
 
-    #    cdict = pecan.request.context.to_policy_values()
-    #    cdict['owner'] = rpc_board.owner
-    #    policy.authorize('iot:port_on_board:get', cdict, cdict)
-
-    #    return self._get_ports_on_board_collection(rpc_board.uuid)
-
-    @expose.expose(PortCollection, types.uuid, int, wtypes.text,
-                   wtypes.text, types.listtype, types.boolean, types.boolean)
-    def get_all(self, marker=None,
-                limit=None, sort_key='id', sort_dir='asc',
-                fields=None, with_public=False, all_ports=False):
-        """Retrieve a list of plugins.
-
-        :param marker: pagination marker for large data sets.
-        :param limit: maximum number of resources to return in a single result.
-                      This value cannot be larger than the value of max_limit
-                      in the [api] section of the ironic configuration, or only
-                      max_limit resources will be returned.
-        :param sort_key: column to sort results by. Default: id.
-        :param sort_dir: direction to sort. "asc" or "desc". Default: asc.
-        :param with_public: Optional boolean to get also public pluings.
-        :param all_plugins: Optional boolean to get all the pluings.
-                            Only for the admin
-        :param fields: Optional, a list with a specified set of fields
-                       of the resource to be returned.
-        """
         cdict = pecan.request.context.to_policy_values()
+        cdict['owner'] = rpc_board.owner
         policy.authorize('iot:port_on_board:get', cdict, cdict)
 
-        if fields is None:
-            fields = _DEFAULT_RETURN_FIELDS
-        return self._get_ports_collection(marker,
-                                          limit, sort_key, sort_dir,
-                                          with_public=with_public,
-                                          all_ports=all_ports,
-                                          fields=fields)
+        return self._get_ports_on_board_collection(rpc_board.uuid)
 
+    @expose.expose(Port, types.uuid_or_name, status_code=200)
+    def get_one(self, port_ident):
+        rpc_board = api_utils.get_rpc_board(self.board_ident)
 
-    ###def put(self):
+        cdict = pecan.request.context.to_policy_values()
+        cdict['owner'] = rpc_board.owner
+        policy.authorize('iot:port_on_board:get', cdict, cdict)
 
-    ###    rpc_board = api_utils.get_rpc_board(self.board_ident)
+        return self.get_port_detail(rpc_board, port_ident)
 
-    ###    rpc_board.check_if_online()
-
-    ###    result = pecan.request.rpcapi.test(pecan.request.context,
-    ###                                                 rpc_board.uuid)
-    ###    return result
-
-
-#############################################
 
 class BoardsController(rest.RestController):
     """REST controller for Boards."""
@@ -570,8 +543,6 @@ class BoardsController(rest.RestController):
     _custom_actions = {
         'detail': ['GET'],
     }
-
-
 
     @pecan.expose()
     def _lookup(self, ident, *remainder):
@@ -788,10 +759,4 @@ class BoardsController(rest.RestController):
 
         return self._get_boards_collection(status, marker,
                                            limit, sort_key, sort_dir,
-                                           project=project,
-                                           fields=fields)
-
-
-
-
-
+                                           project=project, fields=fields)

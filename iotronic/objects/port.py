@@ -33,11 +33,9 @@ class Port(base.IotronicObject):
         'uuid': obj_utils.str_or_none,
         'VIF_name': obj_utils.str_or_none,
         'network': obj_utils.str_or_none,
-        #'project': obj_utils.str_or_none,
         'MAC_add': obj_utils.str_or_none,
         'ip': obj_utils.str_or_none,
         'board_uuid': obj_utils.str_or_none,
-        #'status': obj_utils.str_or_none,
     }
 
     @staticmethod
@@ -50,10 +48,10 @@ class Port(base.IotronicObject):
 
     @base.remotable_classmethod
     def get(cls, context, port_id):
-        """Find a port based on its id or uuid and return a Board object.
+        """Find a port based on its id or uuid and return a Port object.
 
         :param port_id: the id *or* uuid of a port.
-        :returns: a :class:`Board` object.
+        :returns: a :class:`Port` object.
         """
         if strutils.is_int_like(port_id):
             return cls.get_by_id(context, port_id)
@@ -64,10 +62,10 @@ class Port(base.IotronicObject):
 
     @base.remotable_classmethod
     def get_by_id(cls, context, port_id):
-        """Find a port based on its integer id and return a Board object.
+        """Find a port based on its integer id and return a Port object.
 
         :param port_id: the id of a service.
-        :returns: a :class:`Board` object.
+        :returns: a :class:`Port` object.
         """
         db_port = cls.dbapi.get_port_by_id(port_id)
         port = Port._from_db_object(cls(context), db_port)
@@ -75,7 +73,7 @@ class Port(base.IotronicObject):
 
     @base.remotable_classmethod
     def get_by_uuid(cls, context, port_uuid):
-        """Find a port based on uuid and return a port object.
+        """Find a port based on uuid and return a Port object.
 
         :param uuid: the uuid of a port.
         :returns: a :class:`Port` object.
@@ -86,10 +84,10 @@ class Port(base.IotronicObject):
 
     @base.remotable_classmethod
     def get_by_name(cls, context, name):
-        """Find a port based on name and return a Board object.
+        """Find a port based on name and return a Port object.
 
         :param name: the logical name of a port.
-        :returns: a :class:`Board` object.
+        :returns: a :class:`Port` object.
         """
         db_port = cls.dbapi.get_port_by_name(name)
         port = Port._from_db_object(cls(context), db_port)
@@ -100,12 +98,7 @@ class Port(base.IotronicObject):
         """Return a list of port objects.
 
         :param context: Security context.
-        :param limit: maximum number of resources to return in a single result.
-        :param marker: pagination marker for large data sets.
-        :param sort_key: column to sort results by.
-        :param sort_dir: direction to sort. "asc" or "desc".
-        :param filters: Filters to apply.
-        :returns: a list of :class:`ports` object.
+        :param board_uuid: The uuid of the board.
 
         """
         db_port = cls.dbapi.get_ports_by_board_uuid(board_uuid)
@@ -132,7 +125,7 @@ class Port(base.IotronicObject):
     @base.remotable_classmethod
     def list(cls, context, limit=None, marker=None, sort_key=None,
              sort_dir=None, filters=None):
-        """Return a list of Plugin objects.
+        """Return a list of Port objects.
 
         :param context: Security context.
         :param limit: maximum number of resources to return in a single result.
@@ -140,14 +133,14 @@ class Port(base.IotronicObject):
         :param sort_key: column to sort results by.
         :param sort_dir: direction to sort. "asc" or "desc".
         :param filters: Filters to apply.
-        :returns: a list of :class:`Plugin` object.
+        :returns: a list of :class:`Port` object.
 
         """
         db_ports = cls.dbapi.get_port_list(filters=filters,
-                                               limit=limit,
-                                               marker=marker,
-                                               sort_key=sort_key,
-                                               sort_dir=sort_dir)
+                                           limit=limit,
+                                           marker=marker,
+                                           sort_key=sort_key,
+                                           sort_dir=sort_dir)
         return [Port._from_db_object(cls(context), obj)
                 for obj in db_ports]
 
@@ -224,5 +217,3 @@ class Port(base.IotronicObject):
                     self, base.get_attrname(field))
                     and self[field] != current[field]):
                 self[field] = current[field]
-
-

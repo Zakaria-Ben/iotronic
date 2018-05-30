@@ -11,16 +11,14 @@
 # under the License.
 
 
-from neutronclient.common import exceptions as neutron_exceptions
-from neutronclient.v2_0 import client as clientv20
-from oslo_log import log
-from oslo_config import cfg
 from iotronic.common import exception
 from iotronic.common.i18n import _
-from iotronic.common import keystone
-
 from keystoneauth1 import identity
 from keystoneauth1 import session
+from neutronclient.common import exceptions as neutron_exceptions
+from neutronclient.v2_0 import client as clientv20
+from oslo_config import cfg
+from oslo_log import log
 
 CONF = cfg.CONF
 
@@ -54,7 +52,7 @@ neutron_opts = [
     cfg.StrOpt('project_domain_id',
                default='default',
                help=('project domain id')),
-cfg.StrOpt('user_domain_id',
+    cfg.StrOpt('user_domain_id',
                default='default',
                help=('user domain id')),
 ]
@@ -65,9 +63,6 @@ DEFAULT_NEUTRON_URL = CONF.neutron.url
 
 _NEUTRON_SESSION = None
 
-
-
-
 """def _get_neutron_session():
     global _NEUTRON_SESSION
     if not _NEUTRON_SESSION:
@@ -75,11 +70,14 @@ _NEUTRON_SESSION = None
     return _NEUTRON_SESSION
 """
 
+
 def get_client(token=None):
-    auth = identity.Password(auth_url=CONF.neutron.auth_url, username = CONF.neutron.username,
-                             password = CONF.neutron.password, project_name = CONF.neutron.project_name,
-                             project_domain_id = CONF.neutron.project_domain_id,
-                             user_domain_id = CONF.neutron.user_domain_id)
+    auth = identity.Password(auth_url=CONF.neutron.auth_url,
+                             username=CONF.neutron.username,
+                             password=CONF.neutron.password,
+                             project_name=CONF.neutron.project_name,
+                             project_domain_id=CONF.neutron.project_domain_id,
+                             user_domain_id=CONF.neutron.user_domain_id)
     sess = session.Session(auth=auth)
     neutron = clientv20.Client(session=sess)
     return neutron
@@ -119,6 +117,7 @@ def get_client(token=None):
     return clientv20.Client(**params)
 
 """
+
 
 def subnet_info(subnet_uuid):
     client = get_client()
@@ -216,28 +215,31 @@ def _verify_security_groups(security_groups, client):
     existing_sec_groups = [sec_group['id'] for sec_group in neutron_sec_groups]
     missing_sec_groups = set(security_groups) - set(existing_sec_groups)
     if missing_sec_groups:
-        msg = (_('Could not find these security groups (specified via iotronic '
+        msg = (_('Could not find these security groups '
+                 '(specified via iotronic '
                  'config) in neutron: %(ir-sg)s')
                % {'ir-sg': list(missing_sec_groups)})
         LOG.error(msg)
         raise exception.NetworkError(msg)
 
-def add_port_to_network(wagent, network_uuid, subnet_uuid, security_groups=None):
+
+def add_port_to_network(board, network_uuid, subnet_uuid,
+                        security_groups=None):
 
     client = get_client()
     _verify_security_groups(security_groups, client)
-
-    #subnet_uuid = str("006ec006-b7ba-4e17-9aab-a87ebcc6ed6f")
     LOG.debug('For wagent %(wagent)s, creating neutron port on network '
               '%(network_uuid)s.',
-              {'wagent': wagent, 'network_uuid': network_uuid})
+              {'wagent': board.agent, 'network_uuid': network_uuid})
 
     body = {
         'port': {
             'network_id': network_uuid,
+            'project_id': board.project,
+            'device_id': board.uuid,
             'admin_state_up': True,
             'device_owner': 'iot:board',
-            'binding:host_id': wagent,
+            'binding:host_id': board.agent,
             'fixed_ips': [{
                 'subnet_id': subnet_uuid
             }]
@@ -253,24 +255,22 @@ def add_port_to_network(wagent, network_uuid, subnet_uuid, security_groups=None)
         LOG.warning("Could not create neutron port for wagent's "
                     "%(wagent)s on the neutron "
                     "network %(net)s. %(exc)s",
-                    {'net': network_uuid, 'wagent': wagent,
+                    {'net': network_uuid, 'wagent': board.agent,
                      'exc': e})
     else:
         return port
+
 
 def delete_port(wagent, port_uuid):
 
     client = get_client()
     LOG.debug('For wagent %(wagent)s, removing neutron port %(port_uuid)s',
-                  {'wagent': wagent,'port_uuid':port_uuid})
+              {'wagent': wagent, 'port_uuid': port_uuid})
     try:
-        port = client.delete_port(port_uuid)
+        client.delete_port(port_uuid)
         return 1
 
     except neutron_exceptions.NeutronClientException as e:
         LOG.warning("Could not delete neutron port from wagent's "
-                    "%(wagent)s : %(exc)s ",{'wagent': wagent, 'exc':e})
+                    "%(wagent)s : %(exc)s ", {'wagent': wagent, 'exc': e})
         return 0
-
-
-

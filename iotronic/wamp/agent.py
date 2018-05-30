@@ -14,9 +14,9 @@
 #    under the License.
 
 import asyncio
-import txaio
 import subprocess
 import time
+import txaio
 
 from iotronic.common import exception
 from iotronic.common.i18n import _LI
@@ -76,8 +76,11 @@ async def wamp_request(kwarg):
 # OSLO ENDPOINT
 class WampEndpoint(object):
     def __init__(self, agent_uuid):
+
         setattr(self, agent_uuid + '.s4t_invoke_wamp', self.s4t_invoke_wamp)
-        setattr(self, agent_uuid + '.create_tap_interface', self.create_tap_interface)
+
+        setattr(self, agent_uuid + '.create_tap_interface',
+                self.create_tap_interface)
 
     def s4t_invoke_wamp(self, ctx, **kwarg):
         LOG.debug("CONDUCTOR sent me: " + kwarg['wamp_rpc_call'])
@@ -89,26 +92,13 @@ class WampEndpoint(object):
     def create_tap_interface(self, ctx, port_uuid, tcp_port):
         time.sleep(12)
         LOG.debug('Creating tap interface on the wamp agent host')
-        p = subprocess.Popen('socat -d -d TCP:localhost:'+tcp_port+',reuseaddr,forever,'
-                            'interval=10 TUN,tun-type=tap,tun-name=tap'+port_uuid[0:14]+',up '
-                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen('socat -d -d TCP:localhost:' + tcp_port +
+                             ',reuseaddr,forever,interval=10 TUN,tun-type=tap,'
+                             'tun-name=tap' + port_uuid[0:14] +
+                             ',up ', shell=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT)
         return 1
 
-
-"""   On the board
-
-   def create_interface_on_board(self, ctx,l_TCP_port, r_TCP_port, ws_url):
-        LOG.debug('Creating virtual interface on the board')
-        try:
-            p1 = subprocess.Popen('wstun -r'+r_TCP_port+':localhost:'+l_TCP_port+' ws://'+ws_url+' &'
-                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            p2 = subprocess.Popen('socat -d -d TCP-L:'+l_TCP_port+',bind=localhost,reuseaddr,forever,interval=10 TUN,tun-type=tap,tun-name=iot,up &'
-                             , shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            return 1
-        except:
-            LOG.error('Error while creating the virtual interface')
-            return 0
-    """
 
 class RPCServer(Thread):
     def __init__(self):
@@ -122,8 +112,9 @@ class RPCServer(Thread):
         target = oslo_messaging.Target(topic=AGENT_HOST + '.s4t_invoke_wamp',
                                        server='server1')
 
-        target1 = oslo_messaging.Target(topic=AGENT_HOST + '.create_tap_interface',
-                                       server='server1')
+        target1 = oslo_messaging.Target(topic=AGENT_HOST +
+                                        '.create_tap_interface',
+                                        server='server1')
 
         access_policy = dispatcher.DefaultRPCAccessPolicy
         self.server = oslo_messaging.get_rpc_server(
@@ -140,7 +131,6 @@ class RPCServer(Thread):
         LOG.info("Starting AMQP server... ")
         self.server.start()
         self.server1.start()
-
 
     def stop(self):
         LOG.info("Stopping AMQP server... ")

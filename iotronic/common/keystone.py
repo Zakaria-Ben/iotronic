@@ -137,4 +137,3 @@ def token_expires_soon(token, duration=None):
     """
     ksclient = _get_ksclient(token=token)
     return ksclient.auth_ref.will_expire_soon(stale_duration=duration)
-

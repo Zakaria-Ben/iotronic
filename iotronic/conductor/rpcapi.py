@@ -277,7 +277,8 @@ class ConductorAPI(object):
         return cctxt.call(context, 'restore_services_on_board',
                           board_uuid=board_uuid)
 
-    def create_port_on_board(self, context, board_uuid, network, subnet, topic=None):
+    def create_port_on_board(self, context, board_uuid, network,
+                             subnet, sec_groups, topic=None):
         """Add a port on a Board
 
         :param context: request context.
@@ -288,23 +289,11 @@ class ConductorAPI(object):
         """
         cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
         return cctxt.call(context, 'create_port_on_board',
-                          board_uuid=board_uuid, network_uuid=network, subnet_uuid=subnet)
+                          board_uuid=board_uuid, network_uuid=network,
+                          subnet_uuid=subnet, security_groups=sec_groups)
 
-
-    ###def test(self, context, board_uuid, topic=None):
-    ###    """Add a port on a Board
-
-    ###    :param context: request context.
-    ###    :param board_uuid: the uuid of the board.
-    ###    :param topic: RPC topic. Defaults to self.topic.
-    ###    :returns: created port object
-
-    ###    """
-    ###    cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
-    ###    return cctxt.call(context, 'test',
-    ###                      board_uuid=board_uuid)
-
-    def remove_port_from_board(self, context,board_uuid, port_uuid, topic=None):
+    def remove_port_from_board(self, context, board_uuid,
+                               port_uuid, topic=None):
         """remove a port from a Board
 
                 :param context: request context.
@@ -314,5 +303,6 @@ class ConductorAPI(object):
 
                 """
         cctxt = self.client.prepare(topic=topic or self.topic, version='1.0')
-        return cctxt.call(context, 'remove_VIF_from_board', board_uuid=board_uuid,
+        return cctxt.call(context, 'remove_VIF_from_board',
+                          board_uuid=board_uuid,
                           port_uuid=port_uuid)

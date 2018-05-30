@@ -18,10 +18,10 @@ from iotronic.objects import exposedservice
 from iotronic.objects import injectionplugin
 from iotronic.objects import location
 from iotronic.objects import plugin
+from iotronic.objects import port
 from iotronic.objects import service
 from iotronic.objects import sessionwp
 from iotronic.objects import wampagent
-from iotronic.objects import port
 
 Conductor = conductor.Conductor
 Board = board.Board

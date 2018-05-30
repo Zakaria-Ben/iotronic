@@ -26,10 +26,9 @@ from wsme import types as wtypes
 from iotronic.api.controllers import base
 from iotronic.api.controllers import link
 from iotronic.api.controllers.v1 import plugin
-from iotronic.api.controllers.v1 import service
 from iotronic.api.controllers.v1 import port
+from iotronic.api.controllers.v1 import service
 # from iotronic.api.controllers.v1 import driver
-# from iotronic.api.controllers.v1 import port
 # from iotronic.api.controllers.v1 import portgroup
 # from iotronic.api.controllers.v1 import ramdisk
 # from iotronic.api.controllers.v1 import utils
@@ -109,12 +108,10 @@ class V1(base.APIBase):
                        ]
 
         v1.ports = [link.Link.make_link('self', pecan.request.public_url,
-                                           'ports', ''),
-                       link.Link.make_link('bookmark',
-                                           pecan.request.public_url,
-                                           'ports', '',
-                                           bookmark=True)
-                       ]
+                                        'ports', ''),
+                    link.Link.make_link('bookmark',
+                                        pecan.request.public_url, 'ports', '',
+                                        bookmark=True)]
 
         return v1
 

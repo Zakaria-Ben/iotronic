@@ -528,8 +528,6 @@ class Connection(object):
         :returns: A list of ExposedServices on the board.
         """
 
-################ Port
-
     @abc.abstractmethod
     def get_port_by_id(self, port_id):
         """Return a port using the id
@@ -537,6 +535,7 @@ class Connection(object):
         :param port_uuid: The id of a port.
         :returns: A port
         """
+
     @abc.abstractmethod
     def get_port_by_uuid(self, port_uuid):
         """Return a port using the uuid
@@ -544,6 +543,7 @@ class Connection(object):
         :param port_uuid: The uuid of a port.
         :returns: A port
         """
+
     @abc.abstractmethod
     def get_port_by_name(self, port_name):
         """Return a port using the name of the port
@@ -559,6 +559,7 @@ class Connection(object):
             :param board_uuid: The uuid of a board.
             :returns: A list of ports on a board
             """
+
     @abc.abstractmethod
     def get_ports_by_wamp_agent_id(self, wamp_agent_id):
             """Return a list of port managed by a wamp agent
@@ -566,7 +567,6 @@ class Connection(object):
             :param wamp_id: The id of a wamp agent.
             :returns: A list of ports managed by a wamp agent
             """
-
 
     @abc.abstractmethod
     def create_port(self, values):
@@ -576,6 +576,7 @@ class Connection(object):
                        and track the port
         :returns: A port.
         """
+
     @abc.abstractmethod
     def destroy_port(self, port_uuid):
         """Return a list of port on a board
@@ -583,16 +584,3 @@ class Connection(object):
         :param port_uuid: The uuid of a port
         :returns: A port.
         """
-
-############################################################
-###    @abc.abstractmethod
-###    def update_port(self, port_uuid, values):
-###        """Update properties of a port.
-###
-###        :param plugin_id: The id or uuid of a port.
-###        :param values: Dict of values to update.
-###        :returns: A port.
-###        :raises: PortAssociated
-###        :raises: PortNotFound
-###        """
-############################################################
