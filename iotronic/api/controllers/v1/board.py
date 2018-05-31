@@ -503,9 +503,10 @@ class BoardPortsController(rest.RestController):
 
         rpc_board.check_if_online()
 
-        pecan.request.rpcapi.remove_port_from_board(
+        result = pecan.request.rpcapi.remove_port_from_board(
             pecan.request.context, rpc_board.uuid, rpc_port.uuid)
-        return
+
+        return result
 
     @expose.expose(PortCollection, status_code=200)
     def get_all(self):

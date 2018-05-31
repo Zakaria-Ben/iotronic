@@ -83,43 +83,12 @@ def get_client(token=None):
     return neutron
 
 
-"""    params = {'retries': CONF.neutron.retries}
-    url = CONF.neutron.url
-    if CONF.neutron.auth_strategy == 'noauth':
-        params['endpoint_url'] = url or DEFAULT_NEUTRON_URL
-        params['auth_strategy'] = 'noauth'
-        ##params.update({
-        ##    'timeout': CONF.neutron.url_timeout or CONF.neutron.timeout,
-        ##    'insecure': CONF.neutron.insecure,
-        ##    'ca_cert': CONF.neutron.cafile})
-    else:
-        session = _get_neutron_session()
-        if token is None:
-            params['session'] = session
-            # NOTE(pas-ha) endpoint_override==None will auto-discover
-            # endpoint from Keystone catalog.
-            # Region is needed only in this case.
-            # SSL related options are ignored as they are already embedded
-            # in keystoneauth Session object
-            if url:
-                params['endpoint_override'] = url
-            else:
-                params['region_name'] = CONF.keystone.region_name
-        else:
-            params['token'] = token
-            params['endpoint_url'] = url or keystone.get_service_url(
-                session, service_type='network')
-            params.update({
-                'timeout': CONF.neutron.url_timeout or CONF.neutron.timeout,
-                'insecure': CONF.neutron.insecure,
-                'ca_cert': CONF.neutron.cafile})
-
-    return clientv20.Client(**params)
-
-"""
-
-
 def subnet_info(subnet_uuid):
+    """Get subnet details : we need the CIDR
+
+    :param subnet_uuid: Neutron subnet UUID.
+    """
+
     client = get_client()
     try:
         info = client.show_subnet(subnet_uuid)

@@ -283,6 +283,9 @@ class ConductorAPI(object):
 
         :param context: request context.
         :param board_uuid: the uuid of the board.
+        :param network: the network uuid where the port will be created.
+        :param subnet: the subnet uuid where the port will be created.
+        :param sec_groups: security groups associated to the port.
         :param topic: RPC topic. Defaults to self.topic.
         :returns: created port object
 
@@ -297,8 +300,8 @@ class ConductorAPI(object):
         """remove a port from a Board
 
                 :param context: request context.
-                :param port_uuid: the uuid of the port.
-                :param topic: RPC topic. Defaults to self.topic.
+                :param board_uuid: the board uuid where the port resides.
+                :param port_uuid: the UUID of the port.
                 :returns: delete port object
 
                 """

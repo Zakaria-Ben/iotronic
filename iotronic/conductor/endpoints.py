@@ -446,6 +446,7 @@ class ConductorEndpoint(object):
 
                         except Exception:
                             LOG.error("Error while configuring the VIF")
+
                     except Exception as e:
                         LOG.error('Error while updating the DB :' + str(e))
 
@@ -480,6 +481,9 @@ class ConductorEndpoint(object):
                 LOG.info("Port removed from Neutron DB")
                 port.destroy()
                 LOG.info("Port removed from Iotronic DB")
+
+                return port
+
             except Exception as e:
                 LOG.error(str(e))
 

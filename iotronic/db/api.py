@@ -554,33 +554,24 @@ class Connection(object):
 
     @abc.abstractmethod
     def get_ports_by_board_uuid(self, board_uuid):
-            """Return a list of port on a board
+        """Return a list of port on a board
 
-            :param board_uuid: The uuid of a board.
-            :returns: A list of ports on a board
-            """
-
-    @abc.abstractmethod
-    def get_ports_by_wamp_agent_id(self, wamp_agent_id):
-            """Return a list of port managed by a wamp agent
-
-            :param wamp_id: The id of a wamp agent.
-            :returns: A list of ports managed by a wamp agent
-            """
+        :param board_uuid: The uuid of a board.
+        :returns: A list of ports on a board
+        """
 
     @abc.abstractmethod
     def create_port(self, values):
-        """Return a list of port on a board
+        """Create a new port.
 
         :param values: A dict containing several items used to identify
-                       and track the port
+                       and track the service
         :returns: A port.
         """
 
     @abc.abstractmethod
     def destroy_port(self, port_uuid):
-        """Return a list of port on a board
+        """Destroy a port.
 
-        :param port_uuid: The uuid of a port
-        :returns: A port.
+        :param port_uuid: The uuid of a port.
         """
